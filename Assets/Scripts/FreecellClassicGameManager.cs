@@ -16,11 +16,11 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     private GameObject _cardPrefab;
 
-    private void OnEnable()
-    {
-        _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
-        _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
-    }
+    // private void OnEnable()
+    // {
+    //     _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
+    //     _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
+    // }
     // private int _lastHandledSceneHandle = -1;
 
     // private void OnEnable()
@@ -55,6 +55,11 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     public void GameStart()
     {
+
+        _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
+        _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
+
+
         StopAllCoroutines();
         _spawnRoutine = null;
 

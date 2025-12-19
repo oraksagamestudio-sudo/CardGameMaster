@@ -16,7 +16,7 @@ public class TestController : MonoBehaviour
     [SerializeField] private Transform generationTarget;   // 초기 생성 위치
 
 
-    private bool _spriteProviderInit = false;
+    private bool _cardSpriteUtilityInit = false;
     private Coroutine _spawnRoutine;
 
 
@@ -32,123 +32,123 @@ public class TestController : MonoBehaviour
 
     // private float _cardMovingDuration = 0.5f;
 
-    //---------------------------------------------
-    // 버튼 클릭
-    //---------------------------------------------
-    // private int _clickCount = 0;
-    public void GameStart()
-    {
-        // if (_clickedRecently) return;
-        // StartCoroutine(ClickDebounce());
-        // _clickCount++;
-        // Debug.Log($"[OnTestButtonClick] Count = {_clickCount}");
-        StopAllCoroutines();
-        _spawnRoutine = null;
+    // //---------------------------------------------
+    // // 버튼 클릭
+    // //---------------------------------------------
+    // // private int _clickCount = 0;
+    // public void GameStart()
+    // {
+    //     // if (_clickedRecently) return;
+    //     // StartCoroutine(ClickDebounce());
+    //     // _clickCount++;
+    //     // Debug.Log($"[OnTestButtonClick] Count = {_clickCount}");
+    //     StopAllCoroutines();
+    //     _spawnRoutine = null;
         
 
-        // 기존 카드 오브젝트 전부 삭제
-        ClearAllCards();
+    //     // 기존 카드 오브젝트 전부 삭제
+    //     ClearAllCards();
 
-        // 새 코루틴 실행
-        _spawnRoutine = StartCoroutine(SpawnXor());
-    }
+    //     // 새 코루틴 실행
+    //     _spawnRoutine = StartCoroutine(SpawnXor());
+    // }
 
-    //---------------------------------------------
-    // 기존 카드 삭제
-    //---------------------------------------------
-    private void ClearAllCards()
-    {
-        var sr = SlotManager.Instance;
-        var parents = sr.Tableaus;
-        parents.AddRange(sr.Freecells);
-        parents.AddRange(sr.Foundations);
-        foreach (var slot in parents)
-        {
-            for (int i = slot.transform.childCount - 1; i >= 0; i--)
-                Destroy(slot.transform.GetChild(i).gameObject);
-            slot.Clear();
-        }
+    // //---------------------------------------------
+    // // 기존 카드 삭제
+    // //---------------------------------------------
+    // private void ClearAllCards()
+    // {
+    //     var sr = SlotManager.Instance;
+    //     var parents = sr.Tableaus;
+    //     parents.AddRange(sr.Freecells);
+    //     parents.AddRange(sr.Foundations);
+    //     foreach (var slot in parents)
+    //     {
+    //         for (int i = slot.transform.childCount - 1; i >= 0; i--)
+    //             Destroy(slot.transform.GetChild(i).gameObject);
+    //         slot.Clear();
+    //     }
 
-        // 생성 위치(대기 위치)에 남아있는 카드가 있을 수도 있으므로 정리
-        for (int i = generationTarget.childCount - 1; i >= 0; i--)
-            if (generationTarget.GetChild(i).GetComponent<StaticCardController>() != null)
-                Destroy(generationTarget.GetChild(i).gameObject);
+    //     // 생성 위치(대기 위치)에 남아있는 카드가 있을 수도 있으므로 정리
+    //     for (int i = generationTarget.childCount - 1; i >= 0; i--)
+    //         if (generationTarget.GetChild(i).GetComponent<StaticCardController>() != null)
+    //             Destroy(generationTarget.GetChild(i).gameObject);
 
         
-    }
-    private static uint GetRandomSeed()
-    {
-        uint result = (uint)UnityEngine.Random.Range(int.MinValue, int.MaxValue)
-           ^ ((uint)DateTime.Now.Ticks);
-        if(result == 0) return GetRandomSeed();
-        return result;
-    }
+    // }
+    // private static uint GetRandomSeed()
+    // {
+    //     uint result = (uint)UnityEngine.Random.Range(int.MinValue, int.MaxValue)
+    //        ^ ((uint)DateTime.Now.Ticks);
+    //     if(result == 0) return GetRandomSeed();
+    //     return result;
+    // }
         
-    //---------------------------------------------
-    // 카드 생성 및 이동 코루틴
-    //---------------------------------------------
-    private IEnumerator SpawnXor()
-    {
-        uint seed = GetRandomSeed();
-        GameContext.StartNewClassic(seed);
-        var game = GameContext.Classic;
+    // //---------------------------------------------
+    // // 카드 생성 및 이동 코루틴
+    // //---------------------------------------------
+    // private IEnumerator SpawnXor()
+    // {
+    //     uint seed = GetRandomSeed();
+    //     GameContext.StartNewClassic(seed);
+    //     var game = GameContext.Classic;
 
-        // var parents = SlotRegistry.Instance.Tableaus;
-        var tableaus = game.State.Tableaus;
-        int columnCount = tableaus.Length;
+    //     // var parents = SlotRegistry.Instance.Tableaus;
+    //     var tableaus = game.State.Tableaus;
+    //     int columnCount = tableaus.Length;
 
-        // 각 열의 최대 카드 개수 찾기
-        int maxHeight = 0;
-        for (int c = 0; c < columnCount; c++)
-            if (tableaus[c].Count > maxHeight)
-                maxHeight = tableaus[c].Count;
+    //     // 각 열의 최대 카드 개수 찾기
+    //     int maxHeight = 0;
+    //     for (int c = 0; c < columnCount; c++)
+    //         if (tableaus[c].Count > maxHeight)
+    //             maxHeight = tableaus[c].Count;
 
-        StringBuilder sb = new();
+    //     StringBuilder sb = new();
 
-        // ---------- 핵심: 행 우선 루프 ----------
-        for (int row = 0; row < maxHeight; row++)
-        {
-            for (int col = 0; col < columnCount; col++)
-            {
-                if (row >= tableaus[col].Count)
-                {
-                    sb.Append("   ");
-                    continue; // 이 열은 이 행이 없음
-                }
+    //     // ---------- 핵심: 행 우선 루프 ----------
+    //     for (int row = 0; row < maxHeight; row++)
+    //     {
+    //         for (int col = 0; col < columnCount; col++)
+    //         {
+    //             if (row >= tableaus[col].Count)
+    //             {
+    //                 sb.Append("   ");
+    //                 continue; // 이 열은 이 행이 없음
+    //             }
 
-                var card = tableaus[col][row];
-                sb.Append($"{card} ");
+    //             var card = tableaus[col][row];
+    //             sb.Append($"{card} ");
 
-                // 카드 생성
-                var cardObj = Instantiate(cardPrefab, generationTarget);
-                var controller = cardObj.GetComponent<StaticCardController>();
+    //             // 카드 생성
+    //             var cardObj = Instantiate(cardPrefab, generationTarget);
+    //             var controller = cardObj.GetComponent<StaticCardController>();
 
-                if (!_spriteProviderInit)
-                {
-                    CardSpriteUtility.Init(cardObj);
-                    _spriteProviderInit = true;
-                }
+    //             if (!_cardSpriteUtilityInit)
+    //             {
+    //                 CardSpriteUtility.Init(cardObj);
+    //                 _cardSpriteUtilityInit = true;
+    //             }
 
-                controller.Init(card);
+    //             controller.Init(card);
 
-                // DOTween 이동 (부모 변경 없음)
-                CardMotionService.Instance.MoveToSlot(
-                    (RectTransform)controller.transform,
-                    SlotManager.Instance.Tableaus[col].transform,
-                    0.25f
-                );
+    //             // DOTween 이동 (부모 변경 없음)
+    //             CardMotionService.Instance.MoveToSlot(
+    //                 (RectTransform)controller.transform,
+    //                 SlotManager.Instance.Tableaus[col].transform,
+    //                 0.25f
+    //             );
 
-                yield return new WaitForSeconds(0.08f);
-            }
-            sb.Append("\n");
-        }
+    //             yield return new WaitForSeconds(0.08f);
+    //         }
+    //         sb.Append("\n");
+    //     }
 
-        Debug.Log($"[FreecellTest] SEED = {seed}\n{sb}");
+    //     Debug.Log($"[FreecellTest] SEED = {seed}\n{sb}");
 
-        // 코루틴 종료
-        _spawnRoutine = null;
-        // _clickedRecently = false;
-    }
+    //     // 코루틴 종료
+    //     _spawnRoutine = null;
+    //     // _clickedRecently = false;
+    // }
 
 
     public void LegalTest()

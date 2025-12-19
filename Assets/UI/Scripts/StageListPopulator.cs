@@ -69,6 +69,8 @@ public class StageListPopulator : MonoBehaviour
         
         // Freecell 씬으로 이동
         await SceneManager.LoadSceneAsync("Freecell");
+
+        FreecellClassicGameManager.Instance.GameStart();
     }
 
     /// 리스트를 갱신하거나 아이템 추가/삭제 직후 호출
