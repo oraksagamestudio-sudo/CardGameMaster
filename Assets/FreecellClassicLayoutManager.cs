@@ -8,7 +8,9 @@ using Unity.VisualScripting;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-
+/// <summary>
+/// 프리셀 레이아웃 관련 매니저
+/// </summary>
 [ExecuteAlways]
 public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 {
@@ -282,6 +284,11 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
                 foundation.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, CardHeight);
             }
         }
+
+        foreach (var tableau in tableaus) {
+            if (tableau == null) continue;
+            tableau.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, CardHeight);
+        }
     }
 
 
@@ -289,7 +296,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
        TABLEAU 동적 GAP 계산 + 적용
        ===========================================================================*/
 
-    private void ApplyTableauLayout()
+    public void ApplyTableauLayout()
     {
         float containerHeight = tableausArea.rect.height;
 
@@ -353,5 +360,46 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
         var size = rt.sizeDelta;
         size.y = h;
         rt.sizeDelta = size;
+    }
+
+    public bool IsInsideTableausArea(RectTransform cardRT)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            tableausArea,
+            RectTransformUtility.WorldToScreenPoint(null, cardRT.position),
+            null
+        );
+    }
+
+    public SlotController GetNearestTableau(RectTransform cardRT)
+    {
+        Vector2 cardPoint = GetTopCenter(cardRT);
+
+        SlotController best = null;
+        float bestDist = float.MaxValue;
+
+        foreach (var tableauRT in tableaus)
+        {
+            if (tableauRT == null) continue;
+
+            Vector2 slotPoint = GetTopCenter(tableauRT);
+            float d = Vector2.Distance(cardPoint, slotPoint);
+
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = tableauRT.GetComponent<SlotController>();
+            }
+        }
+
+        return best;
+    }
+
+    private Vector2 GetTopCenter(RectTransform rt)
+    {
+        Vector3[] c = new Vector3[4];
+        rt.GetWorldCorners(c);
+        // c[1] = 좌상단, c[2] = 우상단
+        return (Vector2)((c[1] + c[2]) * 0.5f);
     }
 }

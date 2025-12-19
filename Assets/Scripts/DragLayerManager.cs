@@ -1,8 +1,9 @@
+// Assets/Scripts/DragLayerService.cs
 using UnityEngine;
 
-public class DragLayerService : MonoBehaviour
+public class DragLayerManager : MonoBehaviour
 {
-    public static DragLayerService Instance { get; private set; }
+    public static DragLayerManager Instance { get; private set; }
     public RectTransform Rect => (RectTransform)transform;
 
     private void Awake()

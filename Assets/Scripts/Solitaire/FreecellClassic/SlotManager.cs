@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 /// <summary>
-/// 슬롯의 모델초기화 등 로직을 위한 컨트롤러 매니지먼트 객체의 스크립트
+/// 슬롯의 모델초기화와 UI 레이아웃을 관리하기 위한 컨트롤러 매니지먼트 객체의 스크립트
 /// </summary>
 public class SlotManager : MonoBehaviour
 {
@@ -49,7 +49,6 @@ public class SlotManager : MonoBehaviour
         if (TempSlot != null)
             TempSlot.Init(SlotType.Temp, 0);
     }
-
 
     public void RegisterSlot(TableauController slot)
     {

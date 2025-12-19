@@ -29,13 +29,13 @@ public class CardPresenter : MonoBehaviour,
     public void OnBeginDrag(PointerEventData e)
     {
         originalParent = transform.parent;
-        transform.SetParent(DragLayerService.Instance.transform, true);
+        transform.SetParent(DragLayerManager.Instance.transform, true);
     }
 
     public void OnDrag(PointerEventData e)
     {
         RectTransform rt = (RectTransform)transform;
-        rt.anchoredPosition = DragLayerService.Instance.ScreenToLocal(e.position);
+        rt.anchoredPosition = DragLayerManager.Instance.ScreenToLocal(e.position);
     }
 
     public void OnEndDrag(PointerEventData e)

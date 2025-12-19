@@ -121,7 +121,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         // 2) 드래그 레이어 이동
         foreach (var c in _dragGroup)
-            c.transform.SetParent(DragLayerService.Instance.Rect, true);
+            c.transform.SetParent(DragLayerManager.Instance.Rect, true);
 
         // ⭐ 3) 이 시점에서 RaycastTarget OFF
         foreach (var c in _dragGroup)
@@ -288,7 +288,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         foreach (var c in _dragGroup)
             target.AddCard(c);
 
-        // SlotLayoutService.Instance.UpdateLayout(target.transform);
+        SlotManager.Instance.UpdateLayout(target.transform);
     }
 
     // private void ApplyMove(SlotController target)
@@ -336,7 +336,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
         }
 
-        // SlotLayoutService.Instance.UpdateLayout(_slot.transform);
+        SlotManager.Instance.UpdateLayout(_slot.transform);
     }
 
     private bool CanStartDrag(List<StaticCardController> group)

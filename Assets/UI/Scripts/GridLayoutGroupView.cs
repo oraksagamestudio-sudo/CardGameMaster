@@ -8,10 +8,10 @@ using UnityEngine.UI;
 public class GridLayoutGroupView : LayoutGroupView
 {
 
-    private GridLayoutGroup _grid;
-    private RectTransform _rect;
-    private Vector2 _lastRectSize;
-    private bool _dirty = false;
+    // private GridLayoutGroup _grid;
+    // private RectTransform _rect;
+    // private Vector2 _lastRectSize;
+    // private bool _dirty = false;
 
 //     private void Awake()
 //     {
