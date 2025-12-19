@@ -1,0 +1,95 @@
+Assets/TextMesh Pro/Resources/TMP Settings.asset
+Assets/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset
+Assets/TextMesh Pro/Resources/Style Sheets/Default Style Sheet.asset
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset
+Assets/TextMesh Pro/Sprites/EmojiOne.json
+Assets/Readme.asset
+Assets/UI/Prefabs/StageButton.prefab
+Assets/UI/Prefabs/LoadingOverlay.prefab
+Assets/UI/Prefabs/LoginCanvas.prefab
+Assets/UI/Scripts/BootSceneController.cs
+Assets/UI/Scripts/LoadingValueText.cs
+Assets/UI/Scripts/StageButton.cs
+Assets/UI/Scripts/StageListPopulator.cs
+Assets/Settings/Scenes/URP2DSceneTemplate.unity
+Assets/Settings/UniversalRP.asset
+Assets/Settings/Renderer2D.asset
+Assets/LevelPlay/Resources/LevelPlayMediatedNetworkSettings.asset
+Assets/LevelPlay/Resources/LevelPlayMediationSettings.asset
+Assets/LevelPlay/Editor/NetworkManagerSettings.asset
+Assets/LevelPlay/Editor/LevelPlayVersions.json
+Assets/Economy/Scripts/AdManager.cs
+Assets/RemoteContents/Scripts/AddressablesRemoteContentService.cs
+Assets/RemoteContents/Scripts/IRemoteContentService.cs
+Assets/Scenes/Boot.unity
+Assets/Scenes/Lobby.unity
+Assets/Scenes/Login.unity
+Assets/_Recovery/0.unity
+Assets/App/Config/AppConfig.asset
+Assets/App/Scripts/Net/HeartbeatService.cs
+Assets/App/Scripts/Net/HeartbeatPolicy.cs
+Assets/App/Scripts/Net/HeartbeatPolicyRegistry.cs
+Assets/App/Scripts/AppConfig.cs
+Assets/App/Scripts/Bootstrap/Bootstrapper.cs
+Assets/App/Scripts/SafeAreaFitter.cs
+Assets/DefaultVolumeProfile.asset
+Assets/Auth/Scripts/IAuthService.cs
+Assets/Auth/Scripts/AppleAuthService.cs
+Assets/Auth/Scripts/DummyAuthService.cs
+Assets/Auth/Scripts/GoogleAuthService.cs
+Assets/Auth/Scripts/AuthServiceLocator.cs
+Assets/Auth/Scripts/LoginPanelController.cs
+Assets/Auth/Scripts/AuthFacade.cs
+Assets/Resources/IAPProductCatalog.json
+Assets/Resources/Heartbeat/HeartbeatPolicyRegistry.asset
+Assets/Resources/BillingMode.json
+Assets/UniversalRenderPipelineGlobalSettings.asset
+Assets/Adaptive Performance/Settings/Google Android Provider Settings.asset
+Assets/Adaptive Performance/Settings/Samsung Android Provider Settings.asset
+Assets/Adaptive Performance/Settings/Simulator Provider Settings.asset
+Assets/Adaptive Performance/Provider/Samsung Android Provider Loader.asset
+Assets/Adaptive Performance/Provider/Google Android Provider Loader.asset
+Assets/Adaptive Performance/AdaptivePerformanceGeneralSettings.asset
+Assets/Content/Local/SUITE-Regular SDF.asset
+Assets/AddressableAssetsData/AddressableAssetGroupSortSettings.asset
+Assets/AddressableAssetsData/DefaultObject.asset
+Assets/AddressableAssetsData/AddressableAssetSettings.asset
+Assets/AddressableAssetsData/AssetGroupTemplates/Packed Assets.asset
+Assets/AddressableAssetsData/AssetGroups/Localization-String-Tables-Korean (ko).asset
+Assets/AddressableAssetsData/AssetGroups/Localization-String-Tables-English (en).asset
+Assets/AddressableAssetsData/AssetGroups/Localization-Assets-Shared.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Content_Remote_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-Assets-Shared_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Content_Local_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-Assets-Shared_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Content_Local_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-Locales_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-String-Tables-English (en)_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Content_Remote_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-String-Tables-English (en)_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-String-Tables-Korean (ko)_ContentUpdateGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-String-Tables-Korean (ko)_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Schemas/Localization-Locales_BundledAssetGroupSchema.asset
+Assets/AddressableAssetsData/AssetGroups/Localization-Locales.asset
+Assets/AddressableAssetsData/AssetGroups/Content_Local.asset
+Assets/AddressableAssetsData/AssetGroups/Content_Remote.asset
+Assets/AddressableAssetsData/DataBuilders/BuildScriptPackedMode.asset
+Assets/AddressableAssetsData/DataBuilders/BuildScriptPackedPlayMode.asset
+Assets/AddressableAssetsData/DataBuilders/BuildScriptFastMode.asset
+Assets/AddressableAssetsData/ProfileDataSourceSettings.asset
+Assets/TutorialInfo/Scripts/Readme.cs
+Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs
+Assets/Editor/com.unity.mobile.notifications/NotificationSettings.asset
+Assets/Localization/Tables/boot.asset
+Assets/Localization/Tables/boot_en.asset
+Assets/Localization/Tables/default Shared Data.asset
+Assets/Localization/Tables/English (en).asset
+Assets/Localization/Tables/boot_ko.asset
+Assets/Localization/Tables/Korean (ko).asset
+Assets/Localization/Tables/default_en.asset
+Assets/Localization/Tables/boot Shared Data.asset
+Assets/Localization/Tables/default.asset
+Assets/Localization/Tables/default_ko.asset
+Assets/Localization/Tables/Localization Settings.asset
+Assets/Localization/Scripts/LocalizedText.cs

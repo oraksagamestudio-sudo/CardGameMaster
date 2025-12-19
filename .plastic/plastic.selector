@@ -1,0 +1,4 @@
+repository "CardGameMaster/CardGameMaster 2025-12-19_05-46-51@14568642488646@cloud"
+  path "/"
+    br "/main"
+    co "/main"

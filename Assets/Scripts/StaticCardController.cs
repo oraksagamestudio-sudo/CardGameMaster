@@ -180,7 +180,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         // ★ 변경된 부분: 오버랩 기반 슬롯 탐색
         var cardRT = _dragGroup[0].GetComponent<RectTransform>();
-        var targetSlot = SlotHitTestService.Instance.GetBestSlot(cardRT);
+        var targetSlot = SlotManager.Instance.GetBestSlot(cardRT);
 
         // 드래그 끝 → RaycastTarget 복원
         foreach (var c in _dragGroup)
