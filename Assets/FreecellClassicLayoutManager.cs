@@ -7,12 +7,12 @@ using Unity.VisualScripting;
 
 #if UNITY_EDITOR
 using UnityEditor;
-#endif 
+#endif
 
 [ExecuteAlways]
 public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 {
-    public static FreecellClassicLayoutManager Instance {get; private set;}
+    public static FreecellClassicLayoutManager Instance { get; private set; }
 
     [Header("References (SafeAreaRoot 내부)")]
     [SerializeField] private RectTransform rootContainer;
@@ -148,11 +148,11 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     {
         float cardWidth = tableaus[0].rect.width;
         float cardHeight = cardWidth * cardAspect;
-        CardSize = new (cardWidth, cardHeight);
+        CardSize = new(cardWidth, cardHeight);
     }
-/* ===========================================================================
-   MARK DIRTY
-   ===========================================================================*/
+    /* ===========================================================================
+       MARK DIRTY
+       ===========================================================================*/
     private bool ScreenHasChanged()
     {
         Vector2 current = new(Screen.width, Screen.height);
@@ -241,7 +241,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
         applying = false;
         layoutDirty = false;
         //Canvas.ForceUpdateCanvases();
-        
+
     }
 
 
@@ -255,7 +255,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
         if (freecellGrid != null)
         {
             freecellGrid.cellSize = CardSize;
-            foreach(var freecell in freecellGrid.GetComponentsInChildren<RectTransform>())
+            foreach (var freecell in freecellGrid.GetComponentsInChildren<RectTransform>())
             {
                 freecell.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, CardWidth);
                 freecell.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, CardHeight);

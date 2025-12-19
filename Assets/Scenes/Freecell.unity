@@ -4347,7 +4347,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1573975183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4769,24 +4769,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3810fd1715f28487483c76226ac9b9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotTargets:
-  - {fileID: 1031911302}
-  - {fileID: 1155293125}
-  - {fileID: 1557144144}
-  - {fileID: 1005883669}
-  - {fileID: 132753738}
-  - {fileID: 2018832329}
-  - {fileID: 934863012}
-  - {fileID: 1608136351}
-  - {fileID: 952708271}
-  - {fileID: 1363556545}
-  - {fileID: 1401860556}
-  - {fileID: 101067315}
-  - {fileID: 889958448}
-  - {fileID: 1011335588}
-  - {fileID: 615394928}
-  - {fileID: 1160692239}
-  - {fileID: 1771838248}
 --- !u!4 &1637156840
 Transform:
   m_ObjectHideFlags: 0
