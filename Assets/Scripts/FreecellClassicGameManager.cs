@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using Solitaire;
 using UnityEngine;
@@ -16,45 +17,52 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     private GameObject _cardPrefab;
 
-    // private void OnEnable()
-    // {
-    //     _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
-    //     _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
-    // }
-    // private int _lastHandledSceneHandle = -1;
+    private int _lastHandledSceneHandle = -1;
 
-    // private void OnEnable()
-    // {
-    //     SceneManager.sceneLoaded += OnSceneLoaded;
-    // }
-
-    // private void Start()
-    // {
-    //     HandleScene(SceneManager.GetActiveScene());
-    // }
-
-    // private void OnDisable()
-    // {
-    //     SceneManager.sceneLoaded -= OnSceneLoaded;
-    // }
-
-    // private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    // {
-    //     HandleScene(scene);
-    // }
-
-    // private void HandleScene(Scene scene)
-    // {
-    //     if (_lastHandledSceneHandle == scene.handle)
-    //         return;
-
-    //     _lastHandledSceneHandle = scene.handle;
-    //     //var controller = Object.FindAnyObjectByType<TestController>();
-    //     controller.GameStart();
-    // }
-
-    public void GameStart()
+    private void OnEnable()
     {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void Start()
+    {
+        // 씬이 전부 로드된 뒤 랜덤 시드로 게임 시작
+        HandleScene(SceneManager.GetActiveScene());
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        HandleScene(scene);
+    }
+
+    private void HandleScene(Scene scene)
+    {
+        if (_lastHandledSceneHandle == scene.handle)
+            return;
+
+        _lastHandledSceneHandle = scene.handle;
+
+        // 씬이 새로 로드될 때,
+        // 1순위: 로비에서 전달된 시드(스테이지 번호)
+        // 2순위: 내부 랜덤 시드
+        uint seed = GetSeed();          // FreecellLaunchParams에서 가져옴
+        if (seed == 0)
+            seed = GetRandomSeed();     // 직접 Freecell 씬만 실행했을 때를 대비한 랜덤 시드
+
+        GameStart(seed);
+    }
+
+
+    public void GameStart(uint seed = 0)
+    {
+        if (seed == 0)
+            seed = GetRandomSeed();
+
 
         _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
         _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
@@ -68,9 +76,17 @@ public class FreecellClassicGameManager : MonoBehaviour
         ClearAllCards();
 
         // 새 코루틴 실행
-        _spawnRoutine = StartCoroutine(SpawnXor());
+        _spawnRoutine = StartCoroutine(SpawnXor(seed));
+        Debug.Log("GameStart");
     }
 
+    private static uint GetRandomSeed()
+    {
+        uint result = (uint)UnityEngine.Random.Range(int.MinValue, int.MaxValue)
+           ^ ((uint)DateTime.Now.Ticks);
+        if (result == 0) return GetRandomSeed();
+        return result;
+    }
     //---------------------------------------------
     // 기존 카드 삭제
     //---------------------------------------------
@@ -107,11 +123,15 @@ public class FreecellClassicGameManager : MonoBehaviour
             FreecellLaunchParams.HasSeed = false;
             return FreecellLaunchParams.Seed;
         }
-        throw new ArgumentNullException("no has seed. do not game start without the seed.");
+        return 0;
     }
-    private IEnumerator SpawnXor()
+    private IEnumerator SpawnXor(uint seed = 0)
     {
-        uint seed = GetSeed();
+        // 이 시점에서는 반드시 유효한 시드가 넘어와야 한다.
+        // (HandleScene 또는 명시적 GameStart(seed)에서 결정)
+        if (seed == 0)
+            throw new ArgumentNullException("no has seed. do not game start without the seed.");
+
         GameContext.StartNewClassic(seed);
         var game = GameContext.Classic;
 
@@ -169,5 +189,138 @@ public class FreecellClassicGameManager : MonoBehaviour
 
         // 코루틴 종료
         _spawnRoutine = null;
+    }
+
+
+    public void LegalTest()
+    {
+        StringBuilder sb = new();
+        foreach (var move in GameContext.Classic.State.GetLegalMoves())
+        {
+            sb.Append(move);
+            sb.Append("\n");
+        }
+        Debug.Log(sb);
+    }
+
+    public void AutoFoundation()
+    {
+        var moves = GameContext.Classic.ApplyAutoFoundation();
+        var registry = SlotManager.Instance;
+
+        foreach (var move in moves)
+        {
+            SlotController from = null;
+            SlotController to = null;
+
+            switch (move.Kind)
+            {
+                case MoveKind.TableauToFoundation:
+                    from = registry.Tableaus[move.From];
+                    to = registry.Foundations[move.To];
+                    break;
+
+                case MoveKind.CellToFoundation:
+                    from = registry.Freecells[move.From];
+                    to = registry.Foundations[move.To];
+                    break;
+            }
+
+            if (from == null || to == null)
+                continue;
+
+            var cards = from.Cards;
+            if (cards.Count == 0)
+                continue;
+
+            var card = cards[cards.Count - 1];
+            from.RemoveCard(card);
+            to.AddCard(card);
+
+            // SlotLayoutService.Instance.UpdateLayout(from.transform);
+            // SlotLayoutService.Instance.UpdateLayout(to.transform);
+        }
+    }
+
+    public void Undo()
+    {
+        var registry = SlotManager.Instance;
+
+        static int CardKey(CardModel m) => (((int)m.Suit) << 8) | (int)m.Rank;
+
+        void CollectCards(SlotController slot, Dictionary<int, StaticCardController> map)
+        {
+            foreach (var card in slot.Cards)
+                map[CardKey(card.model)] = card;
+        }
+
+        var cardMap = new Dictionary<int, StaticCardController>(52);
+        foreach (var t in registry.Tableaus) CollectCards(t, cardMap);
+        foreach (var c in registry.Freecells) CollectCards(c, cardMap);
+        foreach (var f in registry.Foundations) CollectCards(f, cardMap);
+
+        if (!GameContext.Undo())
+            return;
+
+        void ClearSlot(SlotController slot)
+        {
+            var copy = new List<StaticCardController>(slot.Cards);
+            foreach (var card in copy)
+                slot.RemoveCard(card);
+        }
+
+        foreach (var t in registry.Tableaus) ClearSlot(t);
+        foreach (var c in registry.Freecells) ClearSlot(c);
+        foreach (var f in registry.Foundations) ClearSlot(f);
+
+        var state = GameContext.Classic.State;
+
+        for (int i = 0; i < state.Tableaus.Length; i++)
+        {
+            var slot = registry.Tableaus[i];
+            foreach (var model in state.Tableaus[i])
+                if (cardMap.TryGetValue(CardKey(model), out var card))
+                    slot.AddCard(card);
+
+            // SlotLayoutService.Instance.UpdateLayout(slot.transform);
+        }
+
+        for (int i = 0; i < state.Cells.Length && i < registry.Freecells.Count; i++)
+        {
+            var model = state.Cells[i];
+            if (model != null && cardMap.TryGetValue(CardKey(model), out var card))
+                registry.Freecells[i].AddCard(card);
+
+            // SlotLayoutService.Instance.UpdateLayout(registry.Freecells[i].transform);
+        }
+
+        for (int i = 0; i < state.FoundationTop.Length && i < registry.Foundations.Count; i++)
+        {
+            var slot = registry.Foundations[i];
+            int top = state.FoundationTop[i];
+            for (int rank = 1; rank <= top; rank++)
+            {
+                var key = (((int)i) << 8) | rank;
+                if (cardMap.TryGetValue(key, out var card))
+                    slot.AddCard(card);
+            }
+            // SlotLayoutService.Instance.UpdateLayout(slot.transform);
+        }
+    }
+
+    public void OnBack()
+    {
+        BackToLobbyScene();
+    }
+
+    public void BackToLobbyScene()
+    {
+        if (_spawnRoutine != null)
+        {
+            StopCoroutine(_spawnRoutine);
+            _spawnRoutine = null;
+        }
+
+        SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
     }
 }

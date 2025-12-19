@@ -59,7 +59,7 @@ public class StageListPopulator : MonoBehaviour
         items.Clear();
     }
 
-    private async void OnClickStage(uint stage)
+    private void OnClickStage(uint stage)
     {
         Debug.Log($"[StageList] Click: {stage}");
         
@@ -68,9 +68,9 @@ public class StageListPopulator : MonoBehaviour
         FreecellLaunchParams.HasSeed = true;
         
         // Freecell 씬으로 이동
-        await SceneManager.LoadSceneAsync("Freecell");
+        SceneManager.LoadScene("Freecell");
 
-        FreecellClassicGameManager.Instance.GameStart();
+//        FreecellClassicGameManager.Instance.GameStart();
     }
 
     /// 리스트를 갱신하거나 아이템 추가/삭제 직후 호출

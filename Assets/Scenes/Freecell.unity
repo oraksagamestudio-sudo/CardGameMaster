@@ -362,7 +362,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &132753738
 RectTransform:
   m_ObjectHideFlags: 0
@@ -377,10 +377,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 148869491}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 202, y: 303}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 537, y: -311}
+  m_SizeDelta: {x: 101, y: 151.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &132753739
 MonoBehaviour:
@@ -482,7 +482,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 56.5, y: -311}
+  m_AnchoredPosition: {x: 60.5, y: -159.5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &148869492
@@ -601,8 +601,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 860, y: -361}
-  m_SizeDelta: {x: 1720, y: 0}
+  m_AnchoredPosition: {x: 456, y: -209.5}
+  m_SizeDelta: {x: 912, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &180413096
 MonoBehaviour:
@@ -1037,7 +1037,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1268895099}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TestController, Assembly-CSharp
         m_MethodName: LegalTest
         m_Mode: 1
@@ -1128,7 +1128,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 210, y: -311}
+  m_AnchoredPosition: {x: 109, y: -159.5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &424357246
@@ -1189,7 +1189,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 202, y: 303}
+  m_CellSize: {x: 101, y: 151.5}
   m_Spacing: {x: 16, y: 16}
   m_Constraint: 1
   m_ConstraintCount: 2
@@ -1831,7 +1831,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1268895099}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TestController, Assembly-CSharp
         m_MethodName: AutoFoundation
         m_Mode: 1
@@ -2273,7 +2273,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffb2f5277aef04e03860661c7694f888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 1268895099}
 --- !u!4 &831776047
 Transform:
   m_ObjectHideFlags: 0
@@ -2704,7 +2703,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 1124}
+  m_SizeDelta: {x: 0, y: 1873}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &958689297
 MonoBehaviour:
@@ -2831,6 +2830,7 @@ MonoBehaviour:
   cardAspect: 1.5
   defaultGapDivisor: 3
   gapScaleStep: 0.1
+  generationTarget: {fileID: 610763460}
   freecellGrid: {fileID: 424357248}
   tempSlot: {fileID: 132753738}
   foundationGrid: {fileID: 1921331029}
@@ -3431,7 +3431,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1268895099}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TestController, Assembly-CSharp
         m_MethodName: BackToLobbyScene
         m_Mode: 1
@@ -3670,96 +3670,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9bf3612eb504080abba2f0ff8200eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1184214384
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1184214386}
-  - component: {fileID: 1184214385}
-  m_Layer: 0
-  m_Name: SlotLayoutService
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1184214385
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1184214384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5aea31efabfdc4b639508f6a39af351c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1184214386
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1184214384}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 807.5788, y: 1626.737, z: -1.760517}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1268895098
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1268895100}
-  - component: {fileID: 1268895099}
-  m_Layer: 0
-  m_Name: TestController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1268895099
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1268895098}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5861e4d8f00694e6faefaa607826d76b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 4064060245363932211, guid: 8a62f0875f41b4b62b11485f09f208c2, type: 3}
-  generationTarget: {fileID: 610763460}
---- !u!4 &1268895100
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1268895098}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 203.25142, y: 773.89026, z: 6.828234}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1345029583
 GameObject:
   m_ObjectHideFlags: 0
@@ -3799,8 +3709,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 860, y: -722}
-  m_SizeDelta: {x: 1720, y: 0}
+  m_AnchoredPosition: {x: 456, y: -419}
+  m_SizeDelta: {x: 912, y: 0}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1345029585
 MonoBehaviour:
@@ -4177,59 +4087,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9bf3612eb504080abba2f0ff8200eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1534013566
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1534013567}
-  - component: {fileID: 1534013568}
-  m_Layer: 0
-  m_Name: UISafeAreaFitService
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1534013567
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1534013566}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -271.18396, y: 1005.8866, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1534013568
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1534013566}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18d97d80e24f340aaab5a24d0a0db3a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  root: {fileID: 704761097}
-  topArea: {fileID: 180413095}
-  infoBar: {fileID: 815687053}
-  slotArea: {fileID: 1345029584}
-  tableusArea: {fileID: 958689296}
-  bottomArea: {fileID: 610763460}
-  sampleColumn: {fileID: 1363556545}
-  cardAspect: 1.5
-  bottomAreaHeight: 250
 --- !u!1 &1557144143
 GameObject:
   m_ObjectHideFlags: 0
@@ -4740,50 +4597,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!1 &1637156838
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1637156840}
-  - component: {fileID: 1637156839}
-  m_Layer: 0
-  m_Name: SlotHitTestService
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1637156839
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637156838}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3810fd1715f28487483c76226ac9b9c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1637156840
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637156838}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 807.5788, y: 1626.737, z: -1.760517}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1643924362
 GameObject:
   m_ObjectHideFlags: 0
@@ -4867,7 +4680,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1268895099}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TestController, Assembly-CSharp
         m_MethodName: Undo
         m_Mode: 1
@@ -5182,7 +4995,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1235.5, y: -311}
+  m_AnchoredPosition: {x: 625.5, y: -159.5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1921331027
@@ -5243,7 +5056,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 202, y: 303}
+  m_CellSize: {x: 101, y: 151.5}
   m_Spacing: {x: 16, y: 16}
   m_Constraint: 2
   m_ConstraintCount: 1
@@ -5461,8 +5274,8 @@ RectTransform:
   - {fileID: 1382199634}
   m_Father: {fileID: 780257013}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.013574661, y: 0.010869565}
-  m_AnchorMax: {x: 0.98642534, y: 0.96014494}
+  m_AnchorMin: {x: 0.025, y: 0.009029346}
+  m_AnchorMax: {x: 0.975, y: 0.9653875}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -5527,13 +5340,9 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1610801360}
-  - {fileID: 1534013567}
   - {fileID: 1573975184}
   - {fileID: 2039948656}
-  - {fileID: 1184214386}
-  - {fileID: 1637156840}
   - {fileID: 831776047}
-  - {fileID: 1268895100}
   - {fileID: 994036157}
   - {fileID: 780257013}
   - {fileID: 662304091}

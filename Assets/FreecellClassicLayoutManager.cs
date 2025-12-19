@@ -200,7 +200,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
     protected override void CalculateLayoutComponents()
     {
-        Debug.Log($"2. 슬롯 레이아웃 계산 시작");
+        // Debug.Log($"2. 슬롯 레이아웃 계산 시작");
         if (applying) return;
         if (rootContainer == null || tableaus[0] == null) return;
 
@@ -217,7 +217,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
         // 3) 슬롯사이즈 계산 및 적용
         ApplySlotSizes();
-        if(tempSlot)
+        if(tempSlot != null) // 프리셀클래식에서는 TempSlot 사용하지 않음
             tempSlot.gameObject.SetActive(false);
 
         // 4) SlotArea 높이 = cardHeight
