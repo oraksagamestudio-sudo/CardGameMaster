@@ -13,11 +13,11 @@ public class StageButtonController : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private TextMeshProUGUI labelUGUI;
 
-    private int stageNumber;
-    private Action<int> onClick;
+    private uint stageNumber;
+    private Action<uint> onClick;
 
     // 외부에서 호출: 스테이지 번호와 클릭 콜백 주입
-    public async Task Setup(int stage, Action<int> onClicked)
+    public async Task Setup(uint stage, Action<uint> onClicked)
     {
         stageNumber = stage;
         onClick = onClicked;

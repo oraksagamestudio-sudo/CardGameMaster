@@ -27,6 +27,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     public float cardAspect = 1.5f;     // width * 1.5 = height
     public float defaultGapDivisor = 3f;
     public float gapScaleStep = 0.1f;
+    public Transform generationTarget;   // 초기 생성 위치
     // ======= ▼ READONLY ▼ ========
     public Vector2 CardSize { get; private set; }
     public float CardWidth => CardSize.x;
@@ -216,6 +217,8 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
         // 3) 슬롯사이즈 계산 및 적용
         ApplySlotSizes();
+        if(tempSlot)
+            tempSlot.gameObject.SetActive(false);
 
         // 4) SlotArea 높이 = cardHeight
         float slotHeight = slotArea.rect.height;

@@ -10,7 +10,6 @@ using System.Threading.Tasks; // 사용 안 하면 제거
 public class StageListPopulator : MonoBehaviour
 {
     // Freecell 씬으로 전달할 시드값 (static으로 씬 간 공유)
-    public static int StageSeed { get; private set; }
     
     [Header("Scroll & Content")]
     [SerializeField] private ScrollRect scroll;
@@ -20,7 +19,7 @@ public class StageListPopulator : MonoBehaviour
     [SerializeField] private StageButtonController stageButtonPrefab;
 
     [Header("Initial Fill")]
-    [SerializeField] private int initialCount = 30;
+    [SerializeField] private uint initialCount = 30;
 
     private readonly List<StageButtonController> items = new();
 
@@ -32,11 +31,11 @@ public class StageListPopulator : MonoBehaviour
             RebuildList(initialCount);
     }
 
-    public async void RebuildList(int count)
+    public async void RebuildList(uint count)
     {
         Clear();
 
-        for (int i = 1; i <= count; i++)
+        for (uint i = 1; i <= count; i++)
             await AddOne(i);
 
         // 레이아웃 강제 갱신으로 스냅백 방지
@@ -45,7 +44,7 @@ public class StageListPopulator : MonoBehaviour
         if (scroll != null) scroll.verticalNormalizedPosition = 1f;
     }
 
-    public async Task<StageButtonController> AddOne(int stageNumber)
+    public async Task<StageButtonController> AddOne(uint stageNumber)
     {
         var go = Instantiate(stageButtonPrefab, content);
         await go.Setup(stageNumber, OnClickStage);
@@ -60,12 +59,13 @@ public class StageListPopulator : MonoBehaviour
         items.Clear();
     }
 
-    private async void OnClickStage(int stage)
+    private async void OnClickStage(uint stage)
     {
         Debug.Log($"[StageList] Click: {stage}");
         
         // 시드값 저장 (임시로 스테이지 번호를 시드로 사용)
-        StageSeed = stage;
+        FreecellLaunchParams.Seed = stage;
+        FreecellLaunchParams.HasSeed = true;
         
         // Freecell 씬으로 이동
         await SceneManager.LoadSceneAsync("Freecell");
