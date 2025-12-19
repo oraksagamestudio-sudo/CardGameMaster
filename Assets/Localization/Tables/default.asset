@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: default
+  m_EditorClassIdentifier: Unity.Localization.Editor::UnityEditor.Localization.StringTableCollection
+  m_SharedTableData: {fileID: 11400000, guid: 4f2ee7ffadebe4b6ea7bf32f0a34b3e1, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: 9ae396be26cf34edf9d9fdc4a3300b23, type: 2}
+  - {fileID: 11400000, guid: 12db50bbc2713434788aa4c07969302d, type: 2}
+  m_Extensions:
+  - rid: 1861560280378769491
+  m_Group: default
+  references:
+    version: 2
+    RefIds:
+    - rid: 1861560280378769491
+      type: {class: GoogleSheetsExtension, ns: UnityEditor.Localization.Plugins.Google, asm: Unity.Localization.Editor}
+      data:
+        m_Collection: {fileID: 11400000}
+        m_SheetsServiceProvider: {fileID: 0}
+        m_SpreadsheetId: 
+        m_SheetId: 0
+        m_Columns: []
+        m_RemoveMissingPulledKeys: 1

@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: default_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 4f2ee7ffadebe4b6ea7bf32f0a34b3e1, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 11134820352
+    m_Localized: Hello
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8039313694720
+    m_Localized: Sign in with
+    m_Metadata:
+      m_Items: []
+  - m_Id: 805075042689024
+    m_Localized: Loading ..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 805183914237952
+    m_Localized: Getting user informations ..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 805338994434048
+    m_Localized: Checking version ..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 805531668176896
+    m_Localized: Checking resources ..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2545201275985920
+    m_Localized: Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2545379491962880
+    m_Localized: Round
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2617639280041984
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5079001130328064
+    m_Localized: Freecell Classic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5079079198908416
+    m_Localized: Freecell+
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

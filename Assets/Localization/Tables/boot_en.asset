@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: boot_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 4dd7c526d05944755a7358fc411d75bb, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 84006658048
+    m_Localized: Localization loaded successfully.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 77560012800
+    m_Localized: "Loading localization data\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 75144093696
+    m_Localized: Remote configuration ready.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 72405213184
+    m_Localized: "Initializing remote configuration\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7674519552
+    m_Localized: "Starting game\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 87315963904
+    m_Localized: "Selecting language\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89253732352
+    m_Localized: 'Language selected: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89706717184
+    m_Localized: "Attempting auto login\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 90331668480
+    m_Localized: Auto login successful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 90965008384
+    m_Localized: Auto login skipped.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91627708416
+    m_Localized: Auto login failed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 92311379968
+    m_Localized: "Configuring heartbeat connection\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 92877611008
+    m_Localized: Heartbeat connection established.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 93578059776
+    m_Localized: "Selecting next scene\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 94244954112
+    m_Localized: 'Loading next scene: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 94953791488
+    m_Localized: Boot sequence complete.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 95683600384
+    m_Localized: Game is ready.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743862951936
+    m_Localized: "Loading boot scene\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2155519962767360
+    m_Localized: Applying stage data...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2156514834898944
+    m_Localized: Stage data Loaded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2156754119942144
+    m_Localized: Checking stage data...
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
