@@ -316,6 +316,12 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     private float CalculateDynamicGap(RectTransform tableau, float containerHeight)
     {
         int cardCount = tableau.childCount;
+        return CalculateDynamicGap(tableau, containerHeight, cardCount);
+    }
+
+    /** 테블로에 들어갈 카드 개수를 지정하여 gap 계산 */
+    private float CalculateDynamicGap(RectTransform tableau, float containerHeight, int cardCount)
+    {
         if (cardCount <= 1)
             return CardHeight / defaultGapDivisor;
 
@@ -428,24 +434,19 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     private Vector2 GetPositionForIndex(Transform slot, int index)
     {
         RectTransform slotRT = slot as RectTransform;
-
-        // 슬롯의 높이
-        float slotHeight = slotRT.rect.height;
-
-        // 슬롯 pivot 기준 Top 위치
-        float topY = slotHeight * (1f - slotRT.pivot.y);
-
-        // 카드 pivot이 (0.5,1) 이 아닐 수 있으니 카드 높이 구함 
-        var uiManager = FreecellClassicLayoutManager.Instance;
-        float cardHeight = uiManager.CardHeight;
-
-        // 카드 세로 디폴트 오프셋 (겹쳤을 때 간격)
-        float cardGap = cardHeight / uiManager.defaultGapDivisor;
-        float offsetY = cardGap;  // 행님이 말한 기본 오프셋
-
-        // "Top에서 시작해서 아래로 쌓는" Y좌표
-        float y = topY - (index * offsetY) - (cardHeight * 0.5f);
-
+        
+        // ApplyTableauColumnLayout과 동일한 방식으로 계산
+        // pivot이 (0.5, 1)이고 anchor가 (0.5, 1)이므로 상단 기준으로 아래로 내려가는 형태
+        // 동적 gap 계산 사용 - index는 추가될 카드의 인덱스이므로, 현재 카드 개수는 index
+        // gap 계산 시에는 추가될 카드까지 고려하여 index + 1 사용
+        float containerHeight = tableausArea != null ? tableausArea.rect.height : slotRT.rect.height;
+        int currentCardCount = slotRT.childCount;
+        int totalCardCount = Mathf.Max(currentCardCount, index + 1); // 추가될 카드까지 고려
+        float gap = CalculateDynamicGap(slotRT, containerHeight, totalCardCount);
+        
+        // ApplyTableauColumnLayout과 동일: y = -gap * index
+        float y = -gap * index;
+        
         return new Vector2(0, y);
     }
 
