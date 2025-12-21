@@ -46,16 +46,19 @@ namespace Solitaire.FreecellClassic
             var mv = new Move(kind, from, to, count);
             try
             {
-                // 상태 저장 후 적용
+                // 먼저 이동을 시도하고, 성공하면 undo 스택에 저장
+                var newState = State.Apply(mv);
+                
+                // 이동 성공 시에만 undo 스택에 이전 상태 저장
                 _undo.Push(State);
                 _redo.Clear();
-
-                State = State.Apply(mv);
+                
+                State = newState;
                 return true;
             }
             catch (Exception e)
             {
-
+                // 이동 실패 시 undo 스택에 쌓지 않음
                 var tableaus = State.Tableaus;
                 int columnCount = tableaus.Length;
 

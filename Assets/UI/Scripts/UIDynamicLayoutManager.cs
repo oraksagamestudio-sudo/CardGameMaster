@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class UIDynamicLayoutManager : MonoBehaviour
@@ -6,6 +7,15 @@ public abstract class UIDynamicLayoutManager : MonoBehaviour
     
     [SerializeField] protected float delaySeconds = 0f;
     [SerializeField] protected UIDynamicLayoutManager nextManager;
+
+    protected bool _isApplied = false;
+    public bool IsApplied {
+        get => _isApplied; 
+        protected set{
+            if(value) AppliedLayout();
+            _isApplied = value;
+        }
+    }
 
     public virtual void ApplyLayout(float delaySeconds = 0f)
     {
@@ -47,12 +57,14 @@ public abstract class UIDynamicLayoutManager : MonoBehaviour
         for(int i = 0 ; i < delayFrame; i++)
         {
             yield return null;
-            //Canvas.ForceUpdateCanvases();
             CalculateLayoutComponents();
         }
     }
     protected abstract void HandleWillRenderCanvases();
     protected abstract void CalculateLayoutComponents();
-    public void CallNextLayoutManager(float delaySeconds = 0) => nextManager.ApplyLayout(delaySeconds);
+    public void CallNextLayoutManager(float delaySeconds = 0) { if(nextManager != null) nextManager.ApplyLayout(delaySeconds); }
+    protected virtual void AppliedLayout() {
+        CallNextLayoutManager();
+    }
 
 }

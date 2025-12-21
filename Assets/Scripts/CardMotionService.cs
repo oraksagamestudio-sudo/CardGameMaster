@@ -28,7 +28,7 @@ public class CardMotionService : MonoBehaviour
         // Slot 내에서 최종 목적지 계산
         SlotController sc = slot.GetComponent<SlotController>();
         int targetIndex = sc.Cards.Count;
-        Vector2 localPos = SlotManager.Instance.GetLocalPosition(slot, targetIndex);
+        Vector2 localPos = FreecellClassicLayoutManager.Instance.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
 
         // ★ Tween: 월드 좌표로 이동
@@ -43,7 +43,7 @@ public class CardMotionService : MonoBehaviour
                 sc.AddCard(card.GetComponent<StaticCardController>());
 
                 // 최종 정렬
-                SlotManager.Instance.UpdateLayout(slot);
+                FreecellClassicLayoutManager.Instance.UpdateLayout(slot);
 
                 PlayMoveSfx();
             });
@@ -77,7 +77,7 @@ public class CardMotionService : MonoBehaviour
         // 2) 대표 카드 목표 월드 위치 계산
         // ---------------------------
         int targetIndex = sc.Cards.Count;
-        Vector2 localPos = SlotManager.Instance.GetLocalPosition(slot, targetIndex);
+        Vector2 localPos = FreecellClassicLayoutManager.Instance.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
 
         // ---------------------------
@@ -105,7 +105,7 @@ public class CardMotionService : MonoBehaviour
                     sc.AddCard(card);
                 }
 
-                SlotManager.Instance.UpdateLayout(slot);
+                FreecellClassicLayoutManager.Instance.UpdateLayout(slot);
                 PlayMoveSfx();
             });
 

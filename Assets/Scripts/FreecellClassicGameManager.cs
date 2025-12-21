@@ -9,15 +9,14 @@ using UnityEngine.SceneManagement;
 
 public class FreecellClassicGameManager : MonoBehaviour
 {
+    
     public static FreecellClassicGameManager Instance{ get;private set; }
 
     private bool _cardSpriteUtilityInit = false;
     private Coroutine _spawnRoutine;
-
+    public float generationStartDelay = 1f;
     private Transform _generationTarget;
-
     private GameObject _cardPrefab;
-
     private int _lastHandledSceneHandle = -1;
 
     private void OnEnable()
@@ -76,9 +75,30 @@ public class FreecellClassicGameManager : MonoBehaviour
         // 기존 카드 오브젝트 전부 삭제
         ClearAllCards();
 
-        // 새 코루틴 실행
-        _spawnRoutine = StartCoroutine(SpawnXor(seed));
+        // UI 초기화 완료 대기 후 카드 분배 시작
+        _spawnRoutine = StartCoroutine(WaitForUIAndSpawn(seed));
         Debug.Log("GameStart");
+    }
+
+    /// <summary>
+    /// UI 레이아웃 초기화가 완료될 때까지 대기한 후 카드 분배를 시작합니다.
+    /// </summary>
+    private IEnumerator WaitForUIAndSpawn(uint seed)
+    {
+        var layoutManager = FreecellClassicLayoutManager.Instance;
+        
+        // UI 레이아웃 초기화 완료 대기
+        while (layoutManager == null || !layoutManager.IsApplied)
+        {
+            yield return null;
+        }
+
+        // 추가로 한 프레임 더 대기하여 레이아웃이 완전히 안정화되도록 함
+        yield return new WaitForSeconds(generationStartDelay);
+
+        // 카드 분배 시작
+        yield return StartCoroutine(SpawnXor(seed));
+        _spawnRoutine = null;
     }
 
     private static uint GetRandomSeed()
@@ -187,9 +207,6 @@ public class FreecellClassicGameManager : MonoBehaviour
         }
 
         Debug.Log($"[FreecellTest] SEED = {seed}\n{sb}");
-
-        // 코루틴 종료
-        _spawnRoutine = null;
     }
 
 
@@ -238,8 +255,8 @@ public class FreecellClassicGameManager : MonoBehaviour
             from.RemoveCard(card);
             to.AddCard(card);
 
-            // SlotLayoutService.Instance.UpdateLayout(from.transform);
-            // SlotLayoutService.Instance.UpdateLayout(to.transform);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(from.transform);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(to.transform);
         }
     }
 
@@ -283,7 +300,7 @@ public class FreecellClassicGameManager : MonoBehaviour
                 if (cardMap.TryGetValue(CardKey(model), out var card))
                     slot.AddCard(card);
 
-            // SlotLayoutService.Instance.UpdateLayout(slot.transform);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(slot.transform);
         }
 
         for (int i = 0; i < state.Cells.Length && i < registry.Freecells.Count; i++)
@@ -292,7 +309,7 @@ public class FreecellClassicGameManager : MonoBehaviour
             if (model != null && cardMap.TryGetValue(CardKey(model), out var card))
                 registry.Freecells[i].AddCard(card);
 
-            // SlotLayoutService.Instance.UpdateLayout(registry.Freecells[i].transform);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(registry.Freecells[i].transform);
         }
 
         for (int i = 0; i < state.FoundationTop.Length && i < registry.Foundations.Count; i++)
@@ -305,7 +322,7 @@ public class FreecellClassicGameManager : MonoBehaviour
                 if (cardMap.TryGetValue(key, out var card))
                     slot.AddCard(card);
             }
-            // SlotLayoutService.Instance.UpdateLayout(slot.transform);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(slot.transform);
         }
     }
 

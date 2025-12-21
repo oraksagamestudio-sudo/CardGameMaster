@@ -80,15 +80,15 @@ public class StaticCardView : MonoBehaviour, ICardView
         color.a = fade?.5f:1f;
     }
 
-    // public void OnCardSizeChanged()
-    // {
-    //     UpdateCardSize();
-    // }
+    public void OnCardSizeChanged()
+    {
+        UpdateCardSize();
+    }
 
-    // private void UpdateCardSize()
-    // {
-    //     var rt = GetComponent<RectTransform>();
-    //     rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, CardSizeProvider.CardWidth);
-    //     rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, CardSizeProvider.CardHeight);
-    // }
+    private void UpdateCardSize()
+    {
+        var rt = GetComponent<RectTransform>();
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, FreecellClassicLayoutManager.Instance.CardWidth);
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, FreecellClassicLayoutManager.Instance.CardHeight);
+    }
 }

@@ -14,7 +14,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     private Vector3 _dragStartWorldPos;
-    private Transform _originalParent;
+    // private Transform _originalParent;
     private Canvas _rootCanvas;
 
     private SlotController _slot;
@@ -33,13 +33,13 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
     {
         model = new CardModel(suit, rank, faceUp);
         view.SetCardData(model);
-        // view.OnCardSizeChanged();
+        view.OnCardSizeChanged();
     }
     public void Init(CardModel m)
     {
         model = m;
         view.SetCardData(m);
-        // view.OnCardSizeChanged();
+        view.OnCardSizeChanged();
     }
 
     public void MoveTo(Transform targetSlot, float duration = 0.25f)
@@ -180,9 +180,9 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         // ★ 변경된 부분: 오버랩 기반 슬롯 탐색
         var cardRT = _dragGroup[0].GetComponent<RectTransform>();
-        var targetSlot = SlotManager.Instance.GetBestSlot(cardRT);
+        SlotController targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
 
-        // 드래그 끝 → RaycastTarget 복원
+
         foreach (var c in _dragGroup)
             c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
 
@@ -288,7 +288,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         foreach (var c in _dragGroup)
             target.AddCard(c);
 
-        SlotManager.Instance.UpdateLayout(target.transform);
+        FreecellClassicLayoutManager.Instance.UpdateLayout(target.transform);
     }
 
     // private void ApplyMove(SlotController target)
@@ -336,7 +336,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
         }
 
-        SlotManager.Instance.UpdateLayout(_slot.transform);
+        FreecellClassicLayoutManager.Instance.UpdateLayout(_slot.transform);
     }
 
     private bool CanStartDrag(List<StaticCardController> group)
