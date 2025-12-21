@@ -6,6 +6,7 @@ using System.Text;
 using Solitaire;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class FreecellClassicGameManager : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class FreecellClassicGameManager : MonoBehaviour
     private Transform _generationTarget;
     private GameObject _cardPrefab;
     private int _lastHandledSceneHandle = -1;
+    private bool _isWon = false;
 
     private void OnEnable()
     {
@@ -221,30 +223,20 @@ public class FreecellClassicGameManager : MonoBehaviour
         Debug.Log(sb);
     }
 
-    public void AutoFoundation()
+    public void AutoFoundation(bool useMotion = false)
+    {
+        if (useMotion)
+            StartCoroutine(AutoFoundationCoroutine());
+        else
+            AutoFoundationSkip();
+    }
+
+    private IEnumerator AutoFoundationCoroutine()
     {
         var moves = GameContext.Classic.ApplyAutoFoundation();
-        var registry = SlotManager.Instance;
-
         foreach (var move in moves)
         {
-            SlotController from = null;
-            SlotController to = null;
-
-            switch (move.Kind)
-            {
-                case MoveKind.TableauToFoundation:
-                    from = registry.Tableaus[move.From];
-                    to = registry.Foundations[move.To];
-                    break;
-
-                case MoveKind.CellToFoundation:
-                    from = registry.Freecells[move.From];
-                    to = registry.Foundations[move.To];
-                    break;
-            }
-
-            if (from == null || to == null)
+            if (!TryGetMoveSlots(move, out var from, out var to))
                 continue;
 
             var cards = from.Cards;
@@ -252,6 +244,34 @@ public class FreecellClassicGameManager : MonoBehaviour
                 continue;
 
             var card = cards[cards.Count - 1];
+
+            from.RemoveCard(card);
+            FreecellClassicLayoutManager.Instance.UpdateLayout(from.transform);
+
+            var cardRect = card.GetComponent<RectTransform>();
+            var tweener = CardMotionService.Instance.MoveToSlot(cardRect, to.transform, 0.25f);
+
+            if (tweener != null)
+            {
+                yield return tweener.WaitForCompletion(true);
+            }
+        }
+    }
+
+    private void AutoFoundationSkip()
+    {
+        var moves = GameContext.Classic.ApplyAutoFoundation();
+        foreach (var move in moves)
+        {
+            if (!TryGetMoveSlots(move, out var from, out var to))
+                continue;
+
+            var cards = from.Cards;
+            if (cards.Count == 0)
+                continue;
+
+            var card = cards[cards.Count - 1];
+
             from.RemoveCard(card);
             to.AddCard(card);
 
@@ -259,6 +279,28 @@ public class FreecellClassicGameManager : MonoBehaviour
             FreecellClassicLayoutManager.Instance.UpdateLayout(to.transform);
         }
     }
+
+    private bool TryGetMoveSlots(Move move, out SlotController from, out SlotController to)
+    {
+        var registry = SlotManager.Instance;
+        from = null;
+        to = null;
+
+        switch (move.Kind)
+        {
+            case MoveKind.TableauToFoundation:
+                from = registry.Tableaus[move.From];
+                to = registry.Foundations[move.To];
+                break;
+            case MoveKind.CellToFoundation:
+                from = registry.Freecells[move.From];
+                to = registry.Foundations[move.To];
+                break;
+        }
+
+        return (from != null && to != null);
+    }
+
 
     public void Undo()
     {
@@ -341,4 +383,6 @@ public class FreecellClassicGameManager : MonoBehaviour
 
         SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
     }
+
+    
 }

@@ -44,6 +44,9 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     [Header("Tableau References")]
     public List<RectTransform> tableaus = new();  // 8개
 
+    [Header("DragLayer")]
+    public RectTransform DragLayer;
+
 
 
     private Vector2 lastScreenSize;

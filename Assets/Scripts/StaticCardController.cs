@@ -169,47 +169,6 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             _dragGroup[i].transform.position = worldPos + _initialOffsets[i];
         }
     }
-
-    // --------------------------------------------------------------------
-    // DRAG END
-    // --------------------------------------------------------------------
-    // public void OnEndDrag(PointerEventData eventData)
-    // {
-    //     if (_dragGroup == null || _dragGroup.Count == 0)
-    //         return;
-
-    //     // ★ 변경된 부분: 오버랩 기반 슬롯 탐색
-    //     var cardRT = _dragGroup[0].GetComponent<RectTransform>();
-    //     SlotController targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
-
-
-    //     foreach (var c in _dragGroup)
-    //         c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
-
-    //     if (targetSlot == null)
-    //     {
-    //         RestoreToOriginal();
-    //         return;
-    //     }
-
-    //     // ★ ApplyMove 결과를 기반으로 성공/실패 판단
-    //     bool ok = GameContext.ApplyMove(_slot, targetSlot, _dragGroup.Count);
-    //     if (!ok)
-    //     {
-    //         RestoreToOriginal();
-    //         return;
-    //     }
-
-    //     // ★ 그룹 전체 Tween 이동 방식 A
-    //     CardMotionService.Instance.MoveGroupToSlot(
-    //         _dragGroup,
-    //         targetSlot.transform,
-    //         0.25f
-    //     );
-    //     // // 성공 → UI 등록
-    //     // var rt = (RectTransform)_dragGroup[0].transform;
-    //     // CardMotionService.Instance.MoveToSlot(rt, targetSlot.transform);
-    // }
     public void OnEndDrag(PointerEventData eventData)
     {
         if (_dragGroup == null || _dragGroup.Count == 0)
@@ -221,11 +180,11 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         foreach (var c in _dragGroup)
             c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
 
-        SlotController targetSlot = null;
 
         // ★ 1단계: TableausArea 내부인가?
         var layout = FreecellClassicLayoutManager.Instance;
 
+        SlotController targetSlot;
         if (layout.IsInsideTableausArea(cardRT))
         {
             // ★ Tableaus 전용 판정
@@ -264,21 +223,17 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         if (slotModel == null || move.From != slotModel.Index)
             return false;
 
-        switch (slotModel.Type)
+        return slotModel.Type switch
         {
-            case SlotType.Tableau:
-                return move.Kind == MoveKind.TableauToTableau
-                    || move.Kind == MoveKind.TableauToCell
-                    || move.Kind == MoveKind.TableauToFoundation;
-            case SlotType.Freecell:
-                return move.Kind == MoveKind.CellToTableau
-                    || move.Kind == MoveKind.CellToFoundation;
-            case SlotType.Foundation:
-                return move.Kind == MoveKind.FoundationToTableau
-                    || move.Kind == MoveKind.FoundationToCell;
-            default:
-                return false;
-        }
+            SlotType.Tableau => move.Kind == MoveKind.TableauToTableau
+                                || move.Kind == MoveKind.TableauToCell
+                                || move.Kind == MoveKind.TableauToFoundation,
+            SlotType.Freecell => move.Kind == MoveKind.CellToTableau
+                                || move.Kind == MoveKind.CellToFoundation,
+            SlotType.Foundation => move.Kind == MoveKind.FoundationToTableau
+                                || move.Kind == MoveKind.FoundationToCell,
+            _ => false,
+        };
     }
 
     private static SlotController ResolveTargetSlot(Move move)
@@ -287,21 +242,13 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         if (registry == null)
             return null;
 
-        switch (move.Kind)
+        return move.Kind switch
         {
-            case MoveKind.TableauToTableau:
-            case MoveKind.CellToTableau:
-            case MoveKind.FoundationToTableau:
-                return SafeFetch(registry.Tableaus, move.To);
-            case MoveKind.TableauToCell:
-            case MoveKind.FoundationToCell:
-                return SafeFetch(registry.Freecells, move.To);
-            case MoveKind.TableauToFoundation:
-            case MoveKind.CellToFoundation:
-                return SafeFetch(registry.Foundations, move.To);
-            default:
-                return null;
-        }
+            MoveKind.TableauToTableau or MoveKind.CellToTableau or MoveKind.FoundationToTableau => SafeFetch(registry.Tableaus, move.To),
+            MoveKind.TableauToCell or MoveKind.FoundationToCell => SafeFetch(registry.Freecells, move.To),
+            MoveKind.TableauToFoundation or MoveKind.CellToFoundation => SafeFetch(registry.Foundations, move.To),
+            _ => null,
+        };
     }
 
     private static SlotController SafeFetch(List<SlotController> list, int index)
@@ -314,67 +261,23 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
     private static SlotType? GetTargetSlotType(Move move)
     {
-        switch (move.Kind)
+        return move.Kind switch
         {
-            case MoveKind.TableauToTableau:
-            case MoveKind.CellToTableau:
-            case MoveKind.FoundationToTableau:
-                return SlotType.Tableau;
-            case MoveKind.TableauToCell:
-            case MoveKind.FoundationToCell:
-                return SlotType.Freecell;
-            case MoveKind.TableauToFoundation:
-            case MoveKind.CellToFoundation:
-                return SlotType.Foundation;
-            default:
-                return null;
-        }
+            MoveKind.TableauToTableau or MoveKind.CellToTableau or MoveKind.FoundationToTableau => (SlotType?)SlotType.Tableau,
+            MoveKind.TableauToCell or MoveKind.FoundationToCell => (SlotType?)SlotType.Freecell,
+            MoveKind.TableauToFoundation or MoveKind.CellToFoundation => (SlotType?)SlotType.Foundation,
+            _ => null,
+        };
     }
 
-    private void ApplyMoveToUI(SlotController target)
-    {
-        foreach (var c in _dragGroup)
-            target.AddCard(c);
-
-        FreecellClassicLayoutManager.Instance.UpdateLayout(target.transform);
-    }
-
-    // private void ApplyMove(SlotController target)
+    // private void ApplyMoveToUI(SlotController target)
     // {
-    //     var from = _slot.Model;
-    //     var to = target.Model;
-
-    //     int count = _dragGroup.Count;
-
-    //     MoveKind mk = MoveKind.TableauToTableau;
-
-    //     if (from.Type == SlotType.Tableau && to.Type == SlotType.Freecell)
-    //         mk = MoveKind.TableauToCell;
-
-    //     else if (from.Type == SlotType.Freecell && to.Type == SlotType.Tableau)
-    //         mk = MoveKind.CellToTableau;
-
-    //     else if (from.Type == SlotType.Tableau && to.Type == SlotType.Foundation)
-    //         mk = MoveKind.TableauToFoundation;
-
-    //     else if (from.Type == SlotType.Freecell && to.Type == SlotType.Foundation)
-    //         mk = MoveKind.CellToFoundation;
-
-    //     // 엔진 Move 시도
-    //     bool ok = GameContext.Classic.Move(mk, from.Index, to.Index, count);
-
-    //     if (!ok)
-    //     {
-    //         RestoreToOriginal();
-    //         return;
-    //     }
-
-    //     // 성공 → 슬롯에 카드 등록
     //     foreach (var c in _dragGroup)
     //         target.AddCard(c);
 
-    //     SlotLayoutService.Instance.UpdateLayout(target.transform);
+    //     FreecellClassicLayoutManager.Instance.UpdateLayout(target.transform);
     // }
+
     
     private void RestoreToOriginal()
     {

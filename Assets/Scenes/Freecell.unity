@@ -1834,14 +1834,14 @@ MonoBehaviour:
       - m_Target: {fileID: 831776046}
         m_TargetAssemblyTypeName: FreecellClassicGameManager, Assembly-CSharp
         m_MethodName: AutoFoundation
-        m_Mode: 1
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &737455722
 MonoBehaviour:
@@ -2844,6 +2844,7 @@ MonoBehaviour:
   - {fileID: 615394928}
   - {fileID: 1160692239}
   - {fileID: 1771838248}
+  DragLayer: {fileID: 1382199634}
 --- !u!4 &994036157
 Transform:
   m_ObjectHideFlags: 0

@@ -25,6 +25,14 @@ public class CardMotionService : MonoBehaviour
         if (duration <= 0)
             duration = defaultDuration;
 
+        // 드래그 레이어 가져오기 (없으면 그대로 이동)
+        var dragLayer = FreecellClassicLayoutManager.Instance.DragLayer;
+        if (dragLayer != null && card.parent != dragLayer)
+        {
+            // 드래그 레이어로 먼저 이동
+            card.SetParent(dragLayer, worldPositionStays: true);
+        }
+
         // Slot 내에서 최종 목적지 계산
         SlotController sc = slot.GetComponent<SlotController>();
         int targetIndex = sc.Cards.Count;
@@ -36,7 +44,7 @@ public class CardMotionService : MonoBehaviour
             .SetEase(Ease.OutCubic)
             .OnComplete(() =>
             {
-                // 부모 변경
+                // 부모 변경 (목적지 슬롯으로)
                 card.SetParent(slot, worldPositionStays: false);
 
                 // SlotController 등록
@@ -49,7 +57,8 @@ public class CardMotionService : MonoBehaviour
             });
 
         return tw;
-    }// -----------------------------------------------------------
+    }
+    // -----------------------------------------------------------
     // B. 그룹 이동 — 대표 카드만 Tween → 완료 시 전체 정렬
     // -----------------------------------------------------------
     public Tweener MoveGroupToSlot(
