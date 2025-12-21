@@ -1,5 +1,6 @@
 //Assets/Scripts/CardMotionService.cs
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using DG.Tweening;
 using System.Collections.Generic;
@@ -35,16 +36,24 @@ public class CardMotionService : MonoBehaviour
 
         // 목적지 슬롯의 레이아웃을 먼저 업데이트하여 정확한 위치 계산
         var layoutManager = FreecellClassicLayoutManager.Instance;
+        SlotController sc = slot.GetComponent<SlotController>();
         
-        // 레이아웃 변경 후 정확한 위치 계산을 위해 캔버스 강제 업데이트
+        // 레이아웃 변경 후 정확한 위치 계산을 위해 전체 레이아웃 먼저 적용
         Canvas.ForceUpdateCanvases();
+        if (!layoutManager.IsApplied)
+        {
+            // 전체 레이아웃이 적용되지 않았다면 ApplyLayout 호출
+            layoutManager.ApplyLayout(0f);
+        }
         
-        // 목적지 슬롯의 현재 카드들 정렬 업데이트
+        // 목적지 슬롯의 현재 카드들 정렬 업데이트 (슬롯의 Transform 상태 반영)
         layoutManager.UpdateLayout(slot);
+        
+        // 슬롯의 Transform이 레이아웃 변경에 완전히 반영되도록 한 번 더 강제 업데이트
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)slot);
 
         // Slot 내에서 최종 목적지 계산 (카드 추가 후의 최종 위치)
-        // GetLocalPosition 내부에서 레이아웃이 적용되지 않았다면 자동으로 계산됨
-        SlotController sc = slot.GetComponent<SlotController>();
         int targetIndex = sc.Cards.Count;
         Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
@@ -97,16 +106,24 @@ public class CardMotionService : MonoBehaviour
         // ---------------------------
         var layoutManager = FreecellClassicLayoutManager.Instance;
         
-        // 레이아웃 변경 후 정확한 위치 계산을 위해 캔버스 강제 업데이트
+        // 레이아웃 변경 후 정확한 위치 계산을 위해 전체 레이아웃 먼저 적용
         Canvas.ForceUpdateCanvases();
+        if (!layoutManager.IsApplied)
+        {
+            // 전체 레이아웃이 적용되지 않았다면 ApplyLayout 호출
+            layoutManager.ApplyLayout(0f);
+        }
         
-        // 목적지 슬롯의 현재 카드들 정렬 업데이트
+        // 목적지 슬롯의 현재 카드들 정렬 업데이트 (슬롯의 Transform 상태 반영)
         layoutManager.UpdateLayout(slot);
+        
+        // 슬롯의 Transform이 레이아웃 변경에 완전히 반영되도록 한 번 더 강제 업데이트
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)slot);
 
         // ---------------------------
         // 3) 대표 카드 목표 월드 위치 계산 (카드 추가 후의 최종 위치)
         // ---------------------------
-        // GetLocalPosition 내부에서 레이아웃이 적용되지 않았다면 자동으로 계산됨
         int targetIndex = sc.Cards.Count;
         Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
