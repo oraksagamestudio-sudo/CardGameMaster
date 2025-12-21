@@ -173,18 +173,69 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
     // --------------------------------------------------------------------
     // DRAG END
     // --------------------------------------------------------------------
+    // public void OnEndDrag(PointerEventData eventData)
+    // {
+    //     if (_dragGroup == null || _dragGroup.Count == 0)
+    //         return;
+
+    //     // ★ 변경된 부분: 오버랩 기반 슬롯 탐색
+    //     var cardRT = _dragGroup[0].GetComponent<RectTransform>();
+    //     SlotController targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
+
+
+    //     foreach (var c in _dragGroup)
+    //         c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
+
+    //     if (targetSlot == null)
+    //     {
+    //         RestoreToOriginal();
+    //         return;
+    //     }
+
+    //     // ★ ApplyMove 결과를 기반으로 성공/실패 판단
+    //     bool ok = GameContext.ApplyMove(_slot, targetSlot, _dragGroup.Count);
+    //     if (!ok)
+    //     {
+    //         RestoreToOriginal();
+    //         return;
+    //     }
+
+    //     // ★ 그룹 전체 Tween 이동 방식 A
+    //     CardMotionService.Instance.MoveGroupToSlot(
+    //         _dragGroup,
+    //         targetSlot.transform,
+    //         0.25f
+    //     );
+    //     // // 성공 → UI 등록
+    //     // var rt = (RectTransform)_dragGroup[0].transform;
+    //     // CardMotionService.Instance.MoveToSlot(rt, targetSlot.transform);
+    // }
     public void OnEndDrag(PointerEventData eventData)
     {
         if (_dragGroup == null || _dragGroup.Count == 0)
             return;
 
-        // ★ 변경된 부분: 오버랩 기반 슬롯 탐색
-        var cardRT = _dragGroup[0].GetComponent<RectTransform>();
-        SlotController targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
+        RectTransform cardRT = _dragGroup[0].GetComponent<RectTransform>();
 
-
+        // Raycast 복원
         foreach (var c in _dragGroup)
             c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
+
+        SlotController targetSlot = null;
+
+        // ★ 1단계: TableausArea 내부인가?
+        var layout = FreecellClassicLayoutManager.Instance;
+
+        if (layout.IsInsideTableausArea(cardRT))
+        {
+            // ★ Tableaus 전용 판정
+            targetSlot = layout.GetNearestTableau(cardRT);
+        }
+        else
+        {
+            // ★ 기존 방식 유지
+            targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
+        }
 
         if (targetSlot == null)
         {
@@ -192,7 +243,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             return;
         }
 
-        // ★ ApplyMove 결과를 기반으로 성공/실패 판단
+        // ★ ApplyMove로 룰 체크
         bool ok = GameContext.ApplyMove(_slot, targetSlot, _dragGroup.Count);
         if (!ok)
         {
@@ -200,15 +251,12 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             return;
         }
 
-        // ★ 그룹 전체 Tween 이동 방식 A
+        // ★ 그룹 이동
         CardMotionService.Instance.MoveGroupToSlot(
             _dragGroup,
             targetSlot.transform,
             0.25f
         );
-        // // 성공 → UI 등록
-        // var rt = (RectTransform)_dragGroup[0].transform;
-        // CardMotionService.Instance.MoveToSlot(rt, targetSlot.transform);
     }
 
     private static bool MoveMatchesSlot(Move move, SlotModel slotModel)
