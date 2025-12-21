@@ -452,6 +452,12 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
     public Vector2 GetLocalPosition(Transform slot, int index)
     {
+        // 레이아웃이 적용되지 않았다면 먼저 계산하여 정확한 위치 계산
+        if (!IsApplied)
+        {
+            Canvas.ForceUpdateCanvases();
+            CalculateLayoutComponents();
+        }
 
         if (slot.GetComponent<TableauController>() != null)
             return GetPositionForIndex(slot, index);

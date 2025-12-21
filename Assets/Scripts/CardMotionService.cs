@@ -33,10 +33,20 @@ public class CardMotionService : MonoBehaviour
             card.SetParent(dragLayer, worldPositionStays: true);
         }
 
-        // Slot 내에서 최종 목적지 계산
+        // 목적지 슬롯의 레이아웃을 먼저 업데이트하여 정확한 위치 계산
+        var layoutManager = FreecellClassicLayoutManager.Instance;
+        
+        // 레이아웃 변경 후 정확한 위치 계산을 위해 캔버스 강제 업데이트
+        Canvas.ForceUpdateCanvases();
+        
+        // 목적지 슬롯의 현재 카드들 정렬 업데이트
+        layoutManager.UpdateLayout(slot);
+
+        // Slot 내에서 최종 목적지 계산 (카드 추가 후의 최종 위치)
+        // GetLocalPosition 내부에서 레이아웃이 적용되지 않았다면 자동으로 계산됨
         SlotController sc = slot.GetComponent<SlotController>();
         int targetIndex = sc.Cards.Count;
-        Vector2 localPos = FreecellClassicLayoutManager.Instance.GetLocalPosition(slot, targetIndex);
+        Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
 
         // ★ Tween: 월드 좌표로 이동
@@ -83,21 +93,33 @@ public class CardMotionService : MonoBehaviour
             offsets.Add(group[i].transform.position - first.position);
 
         // ---------------------------
-        // 2) 대표 카드 목표 월드 위치 계산
+        // 2) 목적지 슬롯의 레이아웃을 먼저 업데이트하여 정확한 위치 계산
         // ---------------------------
+        var layoutManager = FreecellClassicLayoutManager.Instance;
+        
+        // 레이아웃 변경 후 정확한 위치 계산을 위해 캔버스 강제 업데이트
+        Canvas.ForceUpdateCanvases();
+        
+        // 목적지 슬롯의 현재 카드들 정렬 업데이트
+        layoutManager.UpdateLayout(slot);
+
+        // ---------------------------
+        // 3) 대표 카드 목표 월드 위치 계산 (카드 추가 후의 최종 위치)
+        // ---------------------------
+        // GetLocalPosition 내부에서 레이아웃이 적용되지 않았다면 자동으로 계산됨
         int targetIndex = sc.Cards.Count;
-        Vector2 localPos = FreecellClassicLayoutManager.Instance.GetLocalPosition(slot, targetIndex);
+        Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
         Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
 
         // ---------------------------
-        // 3) 대표 카드만 Tween
+        // 4) 대표 카드만 Tween
         // ---------------------------
         Tweener tw = first.DOMove(worldTarget, duration)
             .SetEase(Ease.OutCubic)
             .OnUpdate(() =>
             {
                 // ---------------------------
-                // 4) OnUpdate에서 그룹 전체 이동
+                // 5) OnUpdate에서 그룹 전체 이동
                 // ---------------------------
                 for (int i = 0; i < group.Count; i++)
                     group[i].transform.position = first.position + offsets[i];
@@ -105,7 +127,7 @@ public class CardMotionService : MonoBehaviour
             .OnComplete(() =>
             {
                 // ---------------------------
-                // 5) Tween 끝난 뒤 슬롯에 등록
+                // 6) Tween 끝난 뒤 슬롯에 등록
                 // ---------------------------
                 foreach (var card in group)
                 {
