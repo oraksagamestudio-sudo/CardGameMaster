@@ -23,8 +23,7 @@ public class CardMotionService : MonoBehaviour
     // -----------------------------------------------------------
     public Tweener MoveToSlot(RectTransform card, Transform slot, float duration = -1f)
     {
-        if (duration <= 0)
-            duration = defaultDuration;
+        duration = ResolveDuration(duration);
 
         // 드래그 레이어 가져오기 (없으면 그대로 이동)
         var dragLayer = FreecellClassicLayoutManager.Instance.DragLayer;
@@ -34,29 +33,7 @@ public class CardMotionService : MonoBehaviour
             card.SetParent(dragLayer, worldPositionStays: true);
         }
 
-        // 목적지 슬롯의 레이아웃을 먼저 업데이트하여 정확한 위치 계산
-        var layoutManager = FreecellClassicLayoutManager.Instance;
-        SlotController sc = slot.GetComponent<SlotController>();
-        
-        // 레이아웃 변경 후 정확한 위치 계산을 위해 전체 레이아웃 먼저 적용
-        Canvas.ForceUpdateCanvases();
-        if (!layoutManager.IsApplied)
-        {
-            // 전체 레이아웃이 적용되지 않았다면 ApplyLayout 호출
-            layoutManager.ApplyLayout(0f);
-        }
-        
-        // 목적지 슬롯의 현재 카드들 정렬 업데이트 (슬롯의 Transform 상태 반영)
-        layoutManager.UpdateLayout(slot);
-        
-        // 슬롯의 Transform이 레이아웃 변경에 완전히 반영되도록 한 번 더 강제 업데이트
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)slot);
-
-        // Slot 내에서 최종 목적지 계산 (카드 추가 후의 최종 위치)
-        int targetIndex = sc.Cards.Count;
-        Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
-        Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
+        SlotController sc = PrepareSlotAndGetTarget(slot, out Vector3 worldTarget);
 
         // ★ Tween: 월드 좌표로 이동
         Tweener tw = card.DOMove(worldTarget, duration)
@@ -88,11 +65,9 @@ public class CardMotionService : MonoBehaviour
         if (group == null || group.Count == 0)
             return null;
 
-        if (duration <= 0)
-            duration = defaultDuration;
+        duration = ResolveDuration(duration);
 
         var first = group[0].GetComponent<RectTransform>();
-        SlotController sc = slot.GetComponent<SlotController>();
 
         // ---------------------------
         // 1) 그룹 상대 오프셋 저장
@@ -101,42 +76,17 @@ public class CardMotionService : MonoBehaviour
         for (int i = 0; i < group.Count; i++)
             offsets.Add(group[i].transform.position - first.position);
 
-        // ---------------------------
-        // 2) 목적지 슬롯의 레이아웃을 먼저 업데이트하여 정확한 위치 계산
-        // ---------------------------
-        var layoutManager = FreecellClassicLayoutManager.Instance;
-        
-        // 레이아웃 변경 후 정확한 위치 계산을 위해 전체 레이아웃 먼저 적용
-        Canvas.ForceUpdateCanvases();
-        if (!layoutManager.IsApplied)
-        {
-            // 전체 레이아웃이 적용되지 않았다면 ApplyLayout 호출
-            layoutManager.ApplyLayout(0f);
-        }
-        
-        // 목적지 슬롯의 현재 카드들 정렬 업데이트 (슬롯의 Transform 상태 반영)
-        layoutManager.UpdateLayout(slot);
-        
-        // 슬롯의 Transform이 레이아웃 변경에 완전히 반영되도록 한 번 더 강제 업데이트
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)slot);
+        SlotController sc = PrepareSlotAndGetTarget(slot, out Vector3 worldTarget);
 
         // ---------------------------
-        // 3) 대표 카드 목표 월드 위치 계산 (카드 추가 후의 최종 위치)
-        // ---------------------------
-        int targetIndex = sc.Cards.Count;
-        Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
-        Vector3 worldTarget = ((RectTransform)slot).TransformPoint(localPos);
-
-        // ---------------------------
-        // 4) 대표 카드만 Tween
+        // 2) 대표 카드만 Tween
         // ---------------------------
         Tweener tw = first.DOMove(worldTarget, duration)
             .SetEase(Ease.OutCubic)
             .OnUpdate(() =>
             {
                 // ---------------------------
-                // 5) OnUpdate에서 그룹 전체 이동
+                // 3) OnUpdate에서 그룹 전체 이동
                 // ---------------------------
                 for (int i = 0; i < group.Count; i++)
                     group[i].transform.position = first.position + offsets[i];
@@ -144,7 +94,7 @@ public class CardMotionService : MonoBehaviour
             .OnComplete(() =>
             {
                 // ---------------------------
-                // 6) Tween 끝난 뒤 슬롯에 등록
+                // 4) Tween 끝난 뒤 슬롯에 등록
                 // ---------------------------
                 foreach (var card in group)
                 {
@@ -164,5 +114,30 @@ public class CardMotionService : MonoBehaviour
     {
         if (audioSource != null && moveSfx != null)
             audioSource.PlayOneShot(moveSfx);
+    }
+
+    private float ResolveDuration(float duration)
+    {
+        return duration <= 0 ? defaultDuration : duration;
+    }
+
+    private SlotController PrepareSlotAndGetTarget(Transform slot, out Vector3 worldTarget)
+    {
+        var layoutManager = FreecellClassicLayoutManager.Instance;
+        SlotController sc = slot.GetComponent<SlotController>();
+
+        Canvas.ForceUpdateCanvases();
+        if (!layoutManager.IsApplied)
+            layoutManager.ApplyLayout(0f);
+
+        layoutManager.UpdateLayout(slot);
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)slot);
+
+        int targetIndex = sc.Cards.Count;
+        Vector2 localPos = layoutManager.GetLocalPosition(slot, targetIndex);
+        worldTarget = ((RectTransform)slot).TransformPoint(localPos);
+
+        return sc;
     }
 }
