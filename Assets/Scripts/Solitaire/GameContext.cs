@@ -1,4 +1,5 @@
 //Assets/Scripts/Solitaire/GameContext.cs
+using System;
 using System.Collections.Generic;
 using Solitaire.FreecellClassic;
 using UnityEngine;
@@ -48,8 +49,19 @@ namespace Solitaire
 
         public static bool ApplyMove(SlotController from, SlotController to, int count)
         {
-            MoveKind mk = MoveClassifier.Classify(from.Model, to.Model);
-            return Classic.Move(mk, from.Model.Index, to.Model.Index, count);
+            if (CurrentMode == GameMode.FreecellClassic){
+                MoveKind mk = MoveClassifier.Classify(from.Model, to.Model);
+                return Classic.Move(mk, from.Model.Index, to.Model.Index, count);
+            }
+            else throw new InvalidOperationException("No game session has been started.");
+        }
+        
+        public static bool IsVictory() {
+            if(CurrentMode == GameMode.FreecellClassic) {
+                return Classic.WinCheck();
+            }
+            else 
+                return false;
         }
 
         // Undo

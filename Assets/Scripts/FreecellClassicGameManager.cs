@@ -11,7 +11,7 @@ using DG.Tweening;
 public class FreecellClassicGameManager : MonoBehaviour
 {
     
-    public static FreecellClassicGameManager Instance{ get;private set; }
+    public static FreecellClassicGameManager Instance{ get; private set; }
 
     private bool _cardSpriteUtilityInit = false;
     private Coroutine _spawnRoutine;
@@ -19,8 +19,11 @@ public class FreecellClassicGameManager : MonoBehaviour
     private Transform _generationTarget;
     private GameObject _cardPrefab;
     private int _lastHandledSceneHandle = -1;
-    private bool _isWon = false;
 
+
+    private void Awake() {
+        Instance = this;
+    }
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -133,6 +136,10 @@ public class FreecellClassicGameManager : MonoBehaviour
                 Destroy(_generationTarget.GetChild(i).gameObject);
 
 
+    }
+
+    public bool WinCheck() {
+        return GameContext.Classic.WinCheck();
     }
 
     //---------------------------------------------
@@ -256,6 +263,8 @@ public class FreecellClassicGameManager : MonoBehaviour
                 yield return tweener.WaitForCompletion(true);
             }
         }
+        if(WinCheck())
+            FreecellClassicPopupManager.Instance.Show(popupType: PopupType.GameVictory);
     }
 
     private void AutoFoundationSkip()

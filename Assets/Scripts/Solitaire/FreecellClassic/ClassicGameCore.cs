@@ -244,6 +244,15 @@ namespace Solitaire.FreecellClassic
             State = s;
         }
 
+        public bool WinCheck()
+        {
+            var ftop = State.FoundationTop;
+            for (int i = 0; i < ftop.Length; i++)
+                if (ftop[i] != 13)
+                    return false;
+            return true;
+        }
+
         // internal bool CanMove(MoveKind mk, int index1, int index2, int count)
         // {
         //     var m = new Move(
