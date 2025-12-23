@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public enum PopupType {
@@ -29,7 +31,7 @@ public class PopupManager : MonoBehaviour
         Instance = this;
     }
 
-    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false, Action<PopupResult> onPopupClosed = null) 
+    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false, UnityAction onOk = null) 
     {
         if(isModal) 
         {
@@ -59,6 +61,22 @@ public class PopupManager : MonoBehaviour
         var okButton = popup.transform.Find("ButtonArea/Button")?.GetComponent<Button>();
         if (okButton == null) {
             okButton = popup.GetComponentInChildren<Button>(true);
+            if(buttonText != null)
+                okButton.GetComponentInChildren<TextMeshProUGUI>().text = buttonText;
+            if (onOk != null) {
+                Debug.LogWarning("Popup prefab has no Button under ButtonArea/Button. Using first Button found in children.");
+                popupResult = PopupResult.Ok;
+                okButton.onClick.AddListener(onOk);
+            }
+            else
+            {
+                okButton.onClick.AddListener(() =>
+                {
+                    popupResult = PopupResult.Ok;
+                    Destroy(popup);
+                });
+            }
+            
         }
         popup.SetActive(true);
         

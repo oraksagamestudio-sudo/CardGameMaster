@@ -283,10 +283,15 @@ public class FreecellClassicGameManager : MonoBehaviour
             }
         }
         if(GameContext.Classic.WinCheck())
-            FreecellClassicPopupManager.Instance.Show(popupType: PopupType.GameVictory, buttonText: "OK", isModal: true, (res) =>
-            {
-                BackToLobbyScene();
-            });
+            FreecellClassicPopupManager.Instance.Show(
+                popupType: PopupType.GameVictory, 
+                buttonText: "OK", 
+                isModal: true, 
+                onOk:() =>
+                {
+                    BackToLobbyScene();
+                }
+            );
     }
 
     private void AutoFoundationSkip()
