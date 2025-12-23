@@ -8,10 +8,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
 using TMPro;
+using Unity.VisualScripting;
 
 public class FreecellClassicGameManager : MonoBehaviour
 {
-    
+    private static readonly WaitForSeconds _dealInterval = new(0.08f);
+
     public static FreecellClassicGameManager Instance{ get; private set; }
 
     private bool _cardSpriteUtilityInit = false;
@@ -143,7 +145,8 @@ public class FreecellClassicGameManager : MonoBehaviour
     {
         
         var sr = SlotManager.Instance;
-        var parents = sr.Tableaus;
+        var parents = new List<SlotController>(sr.Tableaus.Count + sr.Freecells.Count + sr.Foundations.Count);
+        parents.AddRange(sr.Tableaus);
         parents.AddRange(sr.Freecells);
         parents.AddRange(sr.Foundations);
         foreach (var slot in parents)
@@ -229,7 +232,7 @@ public class FreecellClassicGameManager : MonoBehaviour
                     0.25f
                 );
 
-                yield return new WaitForSeconds(0.08f);
+                yield return _dealInterval;
             }
             sb.Append("\n");
         }

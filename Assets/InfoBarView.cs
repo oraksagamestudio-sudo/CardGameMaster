@@ -15,7 +15,7 @@ public class InfoBarView : MonoBehaviour
     }
     public void SetGameNumber(uint seed)
     {
-        string formattedNumber = seed.ToString("N0", CultureInfo.InvariantCulture);
+        string formattedNumber = Base32Utility.FormatCode(seed);
         gameNumberText.text = $"#{formattedNumber}";
     }
 

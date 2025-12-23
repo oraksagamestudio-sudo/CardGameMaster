@@ -49,14 +49,17 @@ public class PopupManager : MonoBehaviour
             cg.alpha = 1f;
         
         }
-
+        
 
 
         GameObject popupPrefab = defaultPopupPrefab;
 
         var popup = Instantiate(popupPrefab, popupArea);
-        
 
+        var okButton = popup.transform.Find("ButtonArea/Button")?.GetComponent<Button>();
+        if (okButton == null) {
+            okButton = popup.GetComponentInChildren<Button>(true);
+        }
         popup.SetActive(true);
         
     }

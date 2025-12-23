@@ -22,12 +22,16 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
     private List<Vector3> _initialOffsets;
     private Vector3 _pointerStartWorldPos;
+    private Vector3 _lastPointerWorldPos;
+    private bool _hasLastPointerWorldPos;
+    private UnityEngine.UI.Image _raycastImage;
 
 
     void OnEnable()
     {
         view = GetComponent<StaticCardView>();
         _rootCanvas = GetComponentInParent<Canvas>();
+        _raycastImage = GetComponentInChildren<UnityEngine.UI.Image>();
     }
     public void Init(CardSuit suit, CardRank rank, bool faceUp = true)
     {
@@ -46,6 +50,12 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
     {
         var rt = (RectTransform)transform;
         CardMotionService.Instance.MoveToSlot(rt, targetSlot, duration);
+    }
+
+    private void SetRaycastTarget(bool enabled)
+    {
+        if (_raycastImage != null)
+            _raycastImage.raycastTarget = enabled;
     }
 
     // --------------------------------------------------------------------
@@ -118,6 +128,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         // 1) 슬롯에서 제거 먼저
         foreach (var c in _dragGroup)
             _slot.RemoveCard(c);
+        FreecellClassicLayoutManager.Instance.UpdateLayout(_slot.transform);
 
         // 2) 드래그 레이어 이동
         foreach (var c in _dragGroup)
@@ -125,7 +136,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         // ⭐ 3) 이 시점에서 RaycastTarget OFF
         foreach (var c in _dragGroup)
-            c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = false;
+            c.SetRaycastTarget(false);
 
         // 4) 드래그 오프셋 계산
         RectTransformUtility.ScreenPointToWorldPointInRectangle(
@@ -141,11 +152,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         foreach (var c in _dragGroup)
             c.view.SetDraggingVisual(true);
-        // foreach (var c in _dragGroup)
-        // {
-        //     _initialOffsets.Add(c.transform.position - _pointerStartWorldPos);
-        //     c.view.SetDraggingVisual(true);
-        // }
+        _hasLastPointerWorldPos = false;
     }
 
     // --------------------------------------------------------------------
@@ -162,6 +169,10 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             eventData.pressEventCamera,
             out Vector3 worldPos
         );
+        if (_hasLastPointerWorldPos && (worldPos - _lastPointerWorldPos).sqrMagnitude < 0.0001f)
+            return;
+        _lastPointerWorldPos = worldPos;
+        _hasLastPointerWorldPos = true;
 
         // 초기 오프셋 기반으로 정확한 드래그 위치 반영
         for (int i = 0; i < _dragGroup.Count; i++)
@@ -178,22 +189,33 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
 
         // Raycast 복원
         foreach (var c in _dragGroup)
-            c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
+            c.SetRaycastTarget(true);
 
 
         // ★ 1단계: TableausArea 내부인가?
         var layout = FreecellClassicLayoutManager.Instance;
 
-        SlotController targetSlot;
-        if (layout.IsInsideTableausArea(cardRT))
+        SlotController targetSlot = null;
+        if (_dragGroup.Count == 1)
         {
-            // ★ Tableaus 전용 판정
-            targetSlot = layout.GetNearestTableau(cardRT);
+            if (IsInsideArea(layout?.foundationGrid?.transform as RectTransform, cardRT))
+                targetSlot = GetFoundationForSuit(_dragGroup[0].model?.Suit);
+            else if (IsInsideArea(layout?.freecellGrid?.transform as RectTransform, cardRT))
+                targetSlot = GetNearestEmptyFreecell(cardRT.position);
         }
-        else
+
+        if (targetSlot == null)
         {
-            // ★ 기존 방식 유지
-            targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
+            if (layout != null && layout.IsInsideTableausArea(cardRT))
+            {
+                // ★ Tableaus 전용 판정
+                targetSlot = layout.GetNearestTableau(cardRT);
+            }
+            else
+            {
+                // ★ 기존 방식 유지
+                targetSlot = FreecellClassicLayoutManager.Instance.GetBestSlot(cardRT);
+            }
         }
 
         if (targetSlot == null)
@@ -284,10 +306,67 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         foreach (var c in _dragGroup)
         {
             _slot.AddCard(c);
-            c.GetComponentInChildren<UnityEngine.UI.Image>().raycastTarget = true;
+            c.SetRaycastTarget(true);
         }
 
         FreecellClassicLayoutManager.Instance.UpdateLayout(_slot.transform);
+    }
+
+    private static bool IsInsideArea(RectTransform area, RectTransform cardRT)
+    {
+        if (area == null || cardRT == null)
+            return false;
+
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, cardRT.position);
+        return RectTransformUtility.RectangleContainsScreenPoint(area, screenPoint, null);
+    }
+
+    private SlotController GetFoundationForSuit(CardSuit? suit)
+    {
+        if (suit == null)
+            return null;
+
+        var registry = SlotManager.Instance;
+        if (registry == null || registry.Foundations == null)
+            return null;
+
+        int index = suit switch
+        {
+            CardSuit.Spade => 0,
+            CardSuit.Heart => 1,
+            CardSuit.Club => 2,
+            CardSuit.Diamond => 3,
+            _ => -1
+        };
+
+        if (index < 0 || index >= registry.Foundations.Count)
+            return null;
+
+        return registry.Foundations[index];
+    }
+
+    private SlotController GetNearestEmptyFreecell(Vector3 worldPos)
+    {
+        var registry = SlotManager.Instance;
+        if (registry == null || registry.Freecells == null)
+            return null;
+
+        SlotController best = null;
+        float bestDist = float.MaxValue;
+        foreach (var cell in registry.Freecells)
+        {
+            if (cell == null || cell.Cards.Count > 0)
+                continue;
+
+            float dist = Vector3.Distance(worldPos, cell.transform.position);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                best = cell;
+            }
+        }
+
+        return best;
     }
 
     private bool CanStartDrag(List<StaticCardController> group)

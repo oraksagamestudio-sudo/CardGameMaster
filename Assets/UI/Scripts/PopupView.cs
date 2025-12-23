@@ -5,10 +5,10 @@ public abstract class AbstractPopupView : MonoBehaviour
 {
 
     public virtual void OnOk() {
-        // TODO: this Popup off
+        gameObject.SetActive(false);
     }
     public virtual void OnCancel() {
-        // TODO: this Popup off
+        gameObject.SetActive(false);
     }
 
 
