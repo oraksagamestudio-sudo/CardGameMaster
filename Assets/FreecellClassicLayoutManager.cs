@@ -222,9 +222,6 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
         // 3) 슬롯사이즈 계산 및 적용
         ApplySlotSizes();
         
-        var slotAreaSize = slotArea.sizeDelta;
-        slotAreaSize.x = rootContainer.rect.width;
-        slotArea.sizeDelta = slotAreaSize;
 
         if (tempSlot != null) // 프리셀클래식에서는 TempSlot 사용하지 않음
             tempSlot.gameObject.SetActive(false);

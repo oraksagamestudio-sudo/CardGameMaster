@@ -7,6 +7,7 @@ using Solitaire;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
+using TMPro;
 
 public class FreecellClassicGameManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class FreecellClassicGameManager : MonoBehaviour
     private Transform _generationTarget;
     private GameObject _cardPrefab;
     private int _lastHandledSceneHandle = -1;
+
+    public GameStatusModel Status { get; private set; }
+    public event Action<GameStatusModel> OnGameStarted;
 
 
     private void Awake() {
@@ -33,6 +37,17 @@ public class FreecellClassicGameManager : MonoBehaviour
     {
         // 씬이 전부 로드된 뒤 랜덤 시드로 게임 시작
         HandleScene(SceneManager.GetActiveScene());
+        
+    }
+
+    void Update()
+    {
+        Status.ElapsedTime += Time.deltaTime;
+    }
+
+    public void AddScore(int value)
+    {
+        Status.Score += value;
     }
 
     private void OnDisable()
@@ -68,7 +83,6 @@ public class FreecellClassicGameManager : MonoBehaviour
         if (seed == 0)
             seed = GetRandomSeed();
 
-
         _generationTarget = FreecellClassicLayoutManager.Instance.generationTarget;
         _cardPrefab = FreecellClassicLayoutManager.Instance.cardPrefab;
 
@@ -82,7 +96,13 @@ public class FreecellClassicGameManager : MonoBehaviour
 
         // UI 초기화 완료 대기 후 카드 분배 시작
         _spawnRoutine = StartCoroutine(WaitForUIAndSpawn(seed));
-        Debug.Log("GameStart");
+        Debug.Log($"GameStart({seed})");
+        Status = new()
+        {
+            GameNumber = seed
+        };
+        OnGameStarted?.Invoke(Status);
+
     }
 
     /// <summary>
