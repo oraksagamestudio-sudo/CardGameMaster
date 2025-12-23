@@ -7,9 +7,6 @@ using Solitaire;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
-using TMPro;
-using Unity.VisualScripting;
-
 public class FreecellClassicGameManager : MonoBehaviour
 {
     private static readonly WaitForSeconds _dealInterval = new(0.08f);
