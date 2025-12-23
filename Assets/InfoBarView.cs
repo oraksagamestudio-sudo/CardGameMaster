@@ -7,6 +7,7 @@ public class InfoBarView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gameNumberText;
 
     [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI coinText;
 
     public void SetTime(float seconds)
     {
@@ -20,7 +21,14 @@ public class InfoBarView : MonoBehaviour
 
     public void SetScore(int score)
     {
-        scoreText.text = score.ToString("N0", CultureInfo.InvariantCulture);
+        var formattedScore = score.ToString("N0", CultureInfo.InvariantCulture);
+        scoreText.text = $"Score: {formattedScore}"; //TODO: localize
+    }
+
+    public void SetCoins(int coins)
+    {
+        var formattedCoins = coins.ToString("N0", CultureInfo.InvariantCulture);
+        coinText.text = $"Coins: {formattedCoins}"; //TODO: localize
     }
 
     private static string FormatTime(float seconds)

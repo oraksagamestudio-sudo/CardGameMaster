@@ -23,6 +23,8 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     public GameStatusModel Status { get; private set; }
     public event Action<GameStatusModel> OnGameStarted;
+    public event Action<int> OnScoreChangedEvent;
+    public event Action<int> OnCoinsChangedEvent;
 
 
     private void Awake() {
@@ -48,6 +50,7 @@ public class FreecellClassicGameManager : MonoBehaviour
     public void AddScore(int value)
     {
         Status.Score += value;
+        OnScoreChangedEvent?.Invoke(Status.Score);  
     }
 
     private void OnDisable()

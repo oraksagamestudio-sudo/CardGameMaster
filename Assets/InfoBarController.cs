@@ -5,26 +5,45 @@ public class InfoBarController : MonoBehaviour
 {
     private InfoBarView view;
     [SerializeField] private FreecellClassicGameManager game;
+    private bool initialized = false;
 
     private void Awake()
     {
         view = GetComponent<InfoBarView>();
         game.OnGameStarted += Init;
+        game.OnScoreChangedEvent += OnScoreChanged;
+        game.OnCoinsChangedEvent += OnCoinsChanged;
     }
 
     private void OnDestroy() {
         game.OnGameStarted -= Init;
+        game.OnScoreChangedEvent -= OnScoreChanged;
+        game.OnCoinsChangedEvent -= OnCoinsChanged;
     }
-    void Update()
+    void Update()  
     {
+        if (!initialized) return;
+
         view.SetTime(game.Status.ElapsedTime);
-        view.SetScore(game.Status.Score);
+        
     }
 
     public void Init(GameStatusModel model)
     {
+
         view.SetTime(model.ElapsedTime);
         view.SetScore(model.Score);
         view.SetGameNumber(model.GameNumber);
+        initialized = true;
+    }
+
+    private void OnScoreChanged(int score)
+    {
+        view.SetScore(score);
+    }
+
+    private void OnCoinsChanged(int coins)
+    {
+        view.SetCoins(coins);
     }
 }

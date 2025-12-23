@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum PopupType {
     Normal, Ok, OkCancel, GameVictory, Pause, Setting, Error, ErrorWithForceExit
@@ -10,12 +11,16 @@ public enum PopupResult {
 }
 public class PopupManager : MonoBehaviour
 {
+    
+
     public static PopupManager Instance { get; protected set; }
 
-    [Header("prefabs")]
-    [SerializeField] protected GameObject popupPrefab;
-    [SerializeField] protected Dictionary<PopupType, GameObject> buttonLayoutPrefabs;
-    [SerializeField] private Transform rootCanvas;
+    [Header("prefabs")] 
+    [SerializeField] protected GameObject defaultPopupPrefab;
+    [SerializeField] protected GameObject pausePopupPrefab;
+    [SerializeField] protected GameObject victoryPopupPrefab;
+    [SerializeField] protected GameObject settingPopupPrefab;
+    [SerializeField] private Transform popupArea;
 
     public PopupResult popupResult = PopupResult.None;
 
@@ -23,16 +28,32 @@ public class PopupManager : MonoBehaviour
         Instance = this;
     }
 
-    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false) {
-        var popup = Instantiate(popupPrefab, rootCanvas);
-        var popupView = popup.GetComponent<IPopupView>();
+    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false) 
+    {
+        var backgroundForModalPopup = new GameObject("PopupBackground");
+        
+        backgroundForModalPopup.transform.SetParent(popupArea, false);
+        backgroundForModalPopup.transform.localPosition = Vector3.zero;
+        backgroundForModalPopup.AddComponent<RectTransform>().sizeDelta = Vector2.zero;
+        var bgImg = backgroundForModalPopup.AddComponent<Image>();
+        bgImg.color = new Color(0, 0, 0, 0.5f);
+        bgImg.raycastTarget = true;
+        bgImg.maskable = true;
+        backgroundForModalPopup.AddComponent<CanvasRenderer>();
+        var cg = backgroundForModalPopup.AddComponent<CanvasGroup>();
+        cg.interactable = true;
+        cg.blocksRaycasts = true;
+        cg.alpha = 1f;
+        
 
-        if(popupType == PopupType.Normal)
-            popupType = PopupType.Ok;
 
-        GameObject btnLayoutPrefab = buttonLayoutPrefabs[popupType];
 
-        popupView.SetButtonLayout(btnLayoutPrefab);
+
+        GameObject popupPrefab = defaultPopupPrefab;
+
+        var popup = Instantiate(popupPrefab, popupArea);
+        
+
         popup.SetActive(true);
         
     }
