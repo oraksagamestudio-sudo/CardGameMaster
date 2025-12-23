@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,24 +29,26 @@ public class PopupManager : MonoBehaviour
         Instance = this;
     }
 
-    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false) 
+    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false, Action<PopupResult> onPopupClosed = null) 
     {
-        var backgroundForModalPopup = new GameObject("PopupBackground");
+        if(isModal) 
+        {
+            var backgroundForModalPopup = new GameObject("PopupBackground");
+            
+            backgroundForModalPopup.transform.SetParent(popupArea, false);
+            backgroundForModalPopup.transform.localPosition = Vector3.zero;
+            backgroundForModalPopup.AddComponent<RectTransform>().sizeDelta = Vector2.zero;
+            var bgImg = backgroundForModalPopup.AddComponent<Image>();
+            bgImg.color = new Color(0, 0, 0, 0.5f);
+            bgImg.raycastTarget = true;
+            bgImg.maskable = true;
+            backgroundForModalPopup.AddComponent<CanvasRenderer>();
+            var cg = backgroundForModalPopup.AddComponent<CanvasGroup>();
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.alpha = 1f;
         
-        backgroundForModalPopup.transform.SetParent(popupArea, false);
-        backgroundForModalPopup.transform.localPosition = Vector3.zero;
-        backgroundForModalPopup.AddComponent<RectTransform>().sizeDelta = Vector2.zero;
-        var bgImg = backgroundForModalPopup.AddComponent<Image>();
-        bgImg.color = new Color(0, 0, 0, 0.5f);
-        bgImg.raycastTarget = true;
-        bgImg.maskable = true;
-        backgroundForModalPopup.AddComponent<CanvasRenderer>();
-        var cg = backgroundForModalPopup.AddComponent<CanvasGroup>();
-        cg.interactable = true;
-        cg.blocksRaycasts = true;
-        cg.alpha = 1f;
-        
-
+        }
 
 
 

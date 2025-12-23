@@ -161,10 +161,6 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     }
 
-    public bool WinCheck() {
-        return GameContext.Classic.WinCheck();
-    }
-
     //---------------------------------------------
     // 카드 생성 및 이동 코루틴
     //---------------------------------------------
@@ -286,8 +282,11 @@ public class FreecellClassicGameManager : MonoBehaviour
                 yield return tweener.WaitForCompletion(true);
             }
         }
-        if(WinCheck())
-            FreecellClassicPopupManager.Instance.Show(popupType: PopupType.GameVictory);
+        if(GameContext.Classic.WinCheck())
+            FreecellClassicPopupManager.Instance.Show(popupType: PopupType.GameVictory, buttonText: "OK", isModal: true, (res) =>
+            {
+                BackToLobbyScene();
+            });
     }
 
     private void AutoFoundationSkip()
