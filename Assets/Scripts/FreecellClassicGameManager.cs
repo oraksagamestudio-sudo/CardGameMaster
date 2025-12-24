@@ -21,9 +21,12 @@ public class FreecellClassicGameManager : MonoBehaviour
     private int _lastHandledSceneHandle = -1;
 
     public GameStatusModel Status { get; private set; }
+    public event Action<GameStatusModel> OnStatusInitialized;
     public event Action<GameStatusModel> OnGameStarted;
     public event Action<int> OnScoreChangedEvent;
     public event Action<int> OnCoinsChangedEvent;
+    private bool _timerRunning = false;
+    private bool _timerPaused = false;
 
 
     private void Awake() {
@@ -43,6 +46,9 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     void Update()
     {
+        if (Status == null || !_timerRunning || _timerPaused)
+            return;
+
         Status.ElapsedTime += Time.deltaTime;
     }
 
@@ -103,8 +109,8 @@ public class FreecellClassicGameManager : MonoBehaviour
         {
             GameNumber = seed
         };
-        OnGameStarted?.Invoke(Status);
-
+        StopTimer();
+        OnStatusInitialized?.Invoke(Status);
     }
 
     /// <summary>
@@ -126,6 +132,8 @@ public class FreecellClassicGameManager : MonoBehaviour
         // 카드 분배 시작
         yield return StartCoroutine(SpawnXor(seed));
         _spawnRoutine = null;
+        StartTimer();
+        OnGameStarted?.Invoke(Status);
     }
 
     private static uint GetRandomSeed()
@@ -283,6 +291,8 @@ public class FreecellClassicGameManager : MonoBehaviour
             }
         }
         if(GameContext.Classic.WinCheck())
+        {
+            StopTimer();
             FreecellClassicPopupManager.Instance.Show(
                 popupType: PopupType.GameVictory, 
                 buttonText: "OK", 
@@ -292,6 +302,7 @@ public class FreecellClassicGameManager : MonoBehaviour
                     BackToLobbyScene();
                 }
             );
+        }
     }
 
     private void AutoFoundationSkip()
@@ -418,6 +429,37 @@ public class FreecellClassicGameManager : MonoBehaviour
         }
 
         SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+    }
+
+    public void StartTimer()
+    {
+        _timerRunning = true;
+        _timerPaused = false;
+    }
+
+    public void PauseTimer()
+    {
+        _timerPaused = true;
+    }
+
+    public void ResumeTimer()
+    {
+        if (_timerRunning)
+            _timerPaused = false;
+    }
+
+    public void StopTimer()
+    {
+        _timerRunning = false;
+        _timerPaused = false;
+    }
+
+    public void ResetTimer()
+    {
+        if (Status != null)
+            Status.ElapsedTime = 0f;
+        _timerRunning = false;
+        _timerPaused = false;
     }
 
     

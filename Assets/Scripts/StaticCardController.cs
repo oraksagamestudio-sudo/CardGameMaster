@@ -198,7 +198,7 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
         SlotController targetSlot = null;
         if (_dragGroup.Count == 1)
         {
-            if (IsInsideArea(layout?.foundationGrid?.transform as RectTransform, cardRT))
+            if (IsInsideAnyFoundationCell(cardRT))
                 targetSlot = GetFoundationForSuit(_dragGroup[0].model?.Suit);
             else if (IsInsideArea(layout?.freecellGrid?.transform as RectTransform, cardRT))
                 targetSlot = GetNearestEmptyFreecell(cardRT.position);
@@ -343,6 +343,22 @@ public class StaticCardController : MonoBehaviour, IPointerClickHandler, IBeginD
             return null;
 
         return registry.Foundations[index];
+    }
+
+    private bool IsInsideAnyFoundationCell(RectTransform cardRT)
+    {
+        var registry = SlotManager.Instance;
+        if (registry == null || registry.Foundations == null)
+            return false;
+
+        foreach (var foundation in registry.Foundations)
+        {
+            var foundationRT = foundation?.transform as RectTransform;
+            if (foundationRT != null && IsInsideArea(foundationRT, cardRT))
+                return true;
+        }
+
+        return false;
     }
 
     private SlotController GetNearestEmptyFreecell(Vector3 worldPos)

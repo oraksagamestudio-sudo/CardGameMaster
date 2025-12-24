@@ -10,13 +10,13 @@ public class InfoBarController : MonoBehaviour
     private void Awake()
     {
         view = GetComponent<InfoBarView>();
-        game.OnGameStarted += Init;
+        game.OnStatusInitialized += Init;
         game.OnScoreChangedEvent += OnScoreChanged;
         game.OnCoinsChangedEvent += OnCoinsChanged;
     }
 
     private void OnDestroy() {
-        game.OnGameStarted -= Init;
+        game.OnStatusInitialized -= Init;
         game.OnScoreChangedEvent -= OnScoreChanged;
         game.OnCoinsChangedEvent -= OnCoinsChanged;
     }

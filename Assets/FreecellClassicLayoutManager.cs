@@ -51,11 +51,13 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
     private Vector2 lastScreenSize;
     private bool applying = false;
+    private bool layoutLogged = false;
 
     private float lastRootH;
     private float lastInfoH;
     private float lastSlotH;
     private bool heightInitialized = false;
+    private VerticalLayoutGroup topAreaLayoutGroup;
 
     /* ===========================================================================
        LIFE CYCLE
@@ -204,14 +206,12 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
     protected override void CalculateLayoutComponents()
     {
-        // Debug.Log($"2. 슬롯 레이아웃 계산 시작");
+        
         if (applying) return;
         if (rootContainer == null || tableaus[0] == null) return;
 
         applying = true;
 
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(rootContainer);
 
         // 1) safe area width 기반
         float rootHeight = rootContainer.rect.height;
@@ -221,17 +221,27 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
         // 3) 슬롯사이즈 계산 및 적용
         ApplySlotSizes();
-        
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(slotArea);
+        Canvas.ForceUpdateCanvases();
 
         if (tempSlot != null) // 프리셀클래식에서는 TempSlot 사용하지 않음
             tempSlot.gameObject.SetActive(false);
 
-        // 4) SlotArea 높이 = cardHeight
-        float slotHeight = slotArea.rect.height;
+        // 4) SlotArea 높이 = grid preferred height
+        float slotHeight = Mathf.Max(
+            CalculateGridHeight(freecellGrid),
+            CalculateGridHeight(foundationGrid)
+        );
+        if (slotHeight <= 0f)
+            slotHeight = slotArea.rect.height;
         float infoBarHeight = infoBar.rect.height;
 
-        // 5) TopArea 높이 = slotHeight + margin
-        float topAreaHeight = slotHeight + infoBarHeight;
+
+        if (topAreaLayoutGroup == null && topArea != null)
+            topAreaLayoutGroup = topArea.GetComponent<VerticalLayoutGroup>();
+        float topAreaSpacing = topAreaLayoutGroup != null ? topAreaLayoutGroup.spacing : 0f;
+        float topAreaHeight = slotHeight + infoBarHeight + topAreaSpacing;
 
         // 6) 나머지 높이 tableusArea가 가져감 (Dock.Fill)
         float tableusHeight =
@@ -244,12 +254,61 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
         //SetHeight(bottomArea, bottomArea.rect.height);
         SetHeight(tableausArea, tableusHeight);
 
+        // Canvas.ForceUpdateCanvases();
+        // LayoutRebuilder.ForceRebuildLayoutImmediate(rootContainer);
+
         // 8) 테이블로 카드 재정렬
         ApplyTableauLayout();
+
+        LogLayoutMetrics("applied");
+
+        // Canvas.ForceUpdateCanvases();
+        // LayoutRebuilder.ForceRebuildLayoutImmediate(rootContainer);
 
         applying = false;
         IsApplied = true;
 
+    }
+
+    private void LogLayoutMetrics(string stage)
+    {
+        // if (!Application.isPlaying || !Debug.isDebugBuild || layoutLogged)
+        //     return;
+
+        Rect safe = Screen.safeArea;
+        float rootWidth = rootContainer != null ? rootContainer.rect.width : -1f;
+        float rootHeight = rootContainer != null ? rootContainer.rect.height : -1f;
+        float topHeight = topArea != null ? topArea.rect.height : -1f;
+        float slotHeight = slotArea != null ? slotArea.rect.height : -1f;
+        float infoHeight = infoBar != null ? infoBar.rect.height : -1f;
+        float tableausHeight = tableausArea != null ? tableausArea.rect.height : -1f;
+        float bottomHeight = bottomArea != null ? bottomArea.rect.height : -1f;
+
+        float topPref = topArea != null ? LayoutUtility.GetPreferredHeight(topArea) : -1f;
+        float slotPref = slotArea != null ? LayoutUtility.GetPreferredHeight(slotArea) : -1f;
+        float infoPref = infoBar != null ? LayoutUtility.GetPreferredHeight(infoBar) : -1f;
+        float topAreaSpacing = topAreaLayoutGroup != null ? topAreaLayoutGroup.spacing : 0f;
+        float expectedTop = slotHeight + infoHeight + topAreaSpacing;
+
+        float topY = topArea != null ? topArea.anchoredPosition.y : 0f;
+        float tableausY = tableausArea != null ? tableausArea.anchoredPosition.y : 0f;
+        float bottomY = bottomArea != null ? bottomArea.anchoredPosition.y : 0f;
+
+        Vector2 freecellCell = freecellGrid != null ? freecellGrid.cellSize : Vector2.zero;
+        Vector2 foundationCell = foundationGrid != null ? foundationGrid.cellSize : Vector2.zero;
+
+        Debug.Log(
+            $"[Layout:{stage}] screen={Screen.width}x{Screen.height} safe={safe.x:F1},{safe.y:F1},{safe.width:F1},{safe.height:F1} " +
+            $"root={rootWidth:F1}x{rootHeight:F1} top={topHeight:F1}(pref={topPref:F1}) " +
+            $"slot={slotHeight:F1}(pref={slotPref:F1}) info={infoHeight:F1}(pref={infoPref:F1}) expectedTop={expectedTop:F1}"
+        );
+        Debug.Log(
+            $"[Layout:{stage}] tableaus={tableausHeight:F1} bottom={bottomHeight:F1} " +
+            $"topY={topY:F1} tableausY={tableausY:F1} bottomY={bottomY:F1} " +
+            $"freecellCell={freecellCell} foundationCell={foundationCell}"
+        );
+
+        layoutLogged = true;
     }
 
 
@@ -294,6 +353,51 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
             if (tableau == null) continue;
             tableau.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, CardHeight);
         }
+    }
+
+    private float CalculateGridHeight(GridLayoutGroup grid)
+    {
+        if (grid == null)
+            return 0f;
+
+        int childCount = 0;
+        for (int i = 0; i < grid.transform.childCount; i++)
+        {
+            var child = grid.transform.GetChild(i) as RectTransform;
+            if (child == null || !child.gameObject.activeInHierarchy)
+                continue;
+
+            var element = child.GetComponent<LayoutElement>();
+            if (element != null && element.ignoreLayout)
+                continue;
+
+            childCount++;
+        }
+
+        if (childCount == 0)
+            return 0f;
+
+        int rows = 1;
+        switch (grid.constraint)
+        {
+            case GridLayoutGroup.Constraint.FixedColumnCount:
+                rows = Mathf.CeilToInt(childCount / (float)Mathf.Max(1, grid.constraintCount));
+                break;
+            case GridLayoutGroup.Constraint.FixedRowCount:
+                rows = Mathf.Max(1, grid.constraintCount);
+                break;
+            default:
+                var rect = grid.transform as RectTransform;
+                float width = rect != null ? rect.rect.width : 0f;
+                float cellPlusSpacing = grid.cellSize.x + grid.spacing.x;
+                int columns = cellPlusSpacing > 0f
+                    ? Mathf.Max(1, Mathf.FloorToInt((width - grid.padding.horizontal + grid.spacing.x) / cellPlusSpacing))
+                    : 1;
+                rows = Mathf.CeilToInt(childCount / (float)columns);
+                break;
+        }
+
+        return grid.padding.vertical + (rows * grid.cellSize.y) + (Mathf.Max(0, rows - 1) * grid.spacing.y);
     }
 
 
