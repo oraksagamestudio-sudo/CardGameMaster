@@ -18,8 +18,13 @@ public class PopupManager : MonoBehaviour
 
     public static PopupManager Instance { get; protected set; }
 
-    [Header("prefabs")] 
+    [Header("defaultPopup")] 
     [SerializeField] protected GameObject defaultPopupPrefab;
+    [SerializeField] protected TextMeshProUGUI defaultPopupMessageText;
+    [SerializeField] protected Button defaultPopupOkButton;
+    [SerializeField] protected Button defaultPopupCancelButton;
+    
+    [Header("Specific Popups")]
     [SerializeField] protected GameObject pausePopupPrefab;
     [SerializeField] protected GameObject victoryPopupPrefab;
     [SerializeField] protected GameObject settingPopupPrefab;
@@ -31,15 +36,31 @@ public class PopupManager : MonoBehaviour
         Instance = this;
     }
 
-    public virtual void Show(PopupType popupType, string buttonText = null, bool isModal = false, UnityAction onOk = null) 
+    public virtual void Show(
+        PopupType popupType, 
+        string message, 
+        string buttonText = null, 
+        bool isModal = false, 
+        UnityAction onOk = null, 
+        bool showCloseButton = true) 
     {
-        if(isModal) 
+        if(message == null) 
         {
-            var backgroundForModalPopup = new GameObject("PopupBackground");
+            Debug.LogError("PopupManager.Show: message is null");
+            return;
+        }
+        GameObject backgroundForModalPopup = null;
+        if (isModal) 
+        {
+            backgroundForModalPopup = new GameObject("PopupBackground");
             
             backgroundForModalPopup.transform.SetParent(popupArea, false);
             backgroundForModalPopup.transform.localPosition = Vector3.zero;
-            backgroundForModalPopup.AddComponent<RectTransform>().sizeDelta = Vector2.zero;
+            var backgroundRect = backgroundForModalPopup.AddComponent<RectTransform>();
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = Vector2.zero;
             var bgImg = backgroundForModalPopup.AddComponent<Image>();
             bgImg.color = new Color(0, 0, 0, 0.5f);
             bgImg.raycastTarget = true;
@@ -57,26 +78,54 @@ public class PopupManager : MonoBehaviour
         GameObject popupPrefab = defaultPopupPrefab;
 
         var popup = Instantiate(popupPrefab, popupArea);
+        // Set message
+        var messageText = popup.transform.Find("MessageArea/Text (TMP)")?.GetComponent<TextMeshProUGUI>();
+        if (messageText != null) {
+            messageText.text = message;
+        }
 
+        // Set button
         var okButton = popup.transform.Find("ButtonArea/Button")?.GetComponent<Button>();
-        if (okButton == null) {
+        if (okButton == null)
+        {
             okButton = popup.GetComponentInChildren<Button>(true);
-            if(buttonText != null)
-                okButton.GetComponentInChildren<TextMeshProUGUI>().text = buttonText;
-            if (onOk != null) {
-                Debug.LogWarning("Popup prefab has no Button under ButtonArea/Button. Using first Button found in children.");
-                popupResult = PopupResult.Ok;
-                okButton.onClick.AddListener(onOk);
-            }
-            else
+            if (okButton == null)
             {
-                okButton.onClick.AddListener(() =>
-                {
-                    popupResult = PopupResult.Ok;
-                    Destroy(popup);
-                });
+                Debug.LogError("PopupManager.Show: No Button found in popup.");
+                Destroy(popup);
+                return;
             }
-            
+            Debug.LogWarning("Popup prefab has no Button under ButtonArea/Button. Using first Button found in children.");
+        }
+
+        if (buttonText != null)
+        {
+            var okButtonText = okButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (okButtonText != null)
+            {
+                okButtonText.text = buttonText;
+            }
+        }
+
+        if (onOk != null)
+        {
+            okButton.onClick.AddListener(() =>
+            {
+                popupResult = PopupResult.Ok;
+                onOk.Invoke();
+            });
+        }
+        else
+        {
+            okButton.onClick.AddListener(() =>
+            {
+                popupResult = PopupResult.Ok;
+                Destroy(popup);
+                if(backgroundForModalPopup != null) 
+                {
+                    Destroy(backgroundForModalPopup);
+                }
+            });
         }
         popup.SetActive(true);
         

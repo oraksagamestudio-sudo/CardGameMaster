@@ -58,6 +58,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     private float lastSlotH;
     private bool heightInitialized = false;
     private VerticalLayoutGroup topAreaLayoutGroup;
+    private HorizontalLayoutGroup tableausLayoutGroup;
 
     /* ===========================================================================
        LIFE CYCLE
@@ -153,9 +154,47 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
     }
     protected void CalculateCardSize()
     {
-        float cardWidth = tableaus[0].rect.width;
+        float cardWidth = 0f;
+        if (tableausLayoutGroup == null && tableausArea != null)
+            tableausLayoutGroup = tableausArea.GetComponent<HorizontalLayoutGroup>();
+
+        int tableauCount = tableaus != null ? tableaus.Count : 0;
+        if (tableausArea != null && tableausLayoutGroup != null && tableauCount > 0)
+        {
+            float availableWidth = tableausArea.rect.width
+                                   - tableausLayoutGroup.padding.horizontal
+                                   - tableausLayoutGroup.spacing * (tableauCount - 1);
+            if (availableWidth > 0f)
+                cardWidth = availableWidth / tableauCount;
+        }
+
+        if (cardWidth <= 0f && tableaus != null && tableaus.Count > 0 && tableaus[0] != null)
+            cardWidth = tableaus[0].rect.width;
         float cardHeight = cardWidth * cardAspect;
         CardSize = new(cardWidth, cardHeight);
+    }
+
+    private void ApplyTableauWidths()
+    {
+        if (!Application.isPlaying)
+            return;
+        if (tableaus == null || tableaus.Count == 0)
+            return;
+
+        foreach (var tableau in tableaus)
+        {
+            if (tableau == null) continue;
+
+            var layoutElement = tableau.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+                layoutElement = tableau.gameObject.AddComponent<LayoutElement>();
+
+            layoutElement.ignoreLayout = false;
+            layoutElement.minWidth = CardWidth;
+            layoutElement.preferredWidth = CardWidth;
+            layoutElement.flexibleWidth = 0f;
+            tableau.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, CardWidth);
+        }
     }
     /* ===========================================================================
        MARK DIRTY
@@ -218,6 +257,7 @@ public class FreecellClassicLayoutManager : UIDynamicLayoutManager
 
         // 2) 8등분 → 카드 너비 확정 update this.CardSize
         CalculateCardSize();
+        ApplyTableauWidths();
 
         // 3) 슬롯사이즈 계산 및 적용
         ApplySlotSizes();

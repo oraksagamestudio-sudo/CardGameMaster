@@ -7,6 +7,7 @@ using Solitaire;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
+using NUnit.Framework;
 public class FreecellClassicGameManager : MonoBehaviour
 {
     private static readonly WaitForSeconds _dealInterval = new(0.08f);
@@ -293,16 +294,22 @@ public class FreecellClassicGameManager : MonoBehaviour
         if(GameContext.Classic.WinCheck())
         {
             StopTimer();
-            FreecellClassicPopupManager.Instance.Show(
-                popupType: PopupType.GameVictory, 
-                buttonText: "OK", 
-                isModal: true, 
-                onOk:() =>
-                {
-                    BackToLobbyScene();
-                }
-            );
+            ShowVictoryPopup();
         }
+    }
+
+    private void ShowVictoryPopup(bool isModal = true)
+    {
+        FreecellClassicPopupManager.Instance.Show(
+            popupType: PopupType.GameVictory,
+            message: "Congratulations! You have won the game.",
+            buttonText: "OK",
+            isModal: isModal,
+            onOk: () =>
+            {
+                BackToLobbyScene();
+            }
+        );
     }
 
     private void AutoFoundationSkip()
@@ -462,5 +469,18 @@ public class FreecellClassicGameManager : MonoBehaviour
         _timerPaused = false;
     }
 
+
+
+#region Test Functions
     
+    public void PopupTest(bool isModal)
+    {
+        FreecellClassicPopupManager.Instance.Show(
+            popupType: PopupType.GameVictory,
+            message: "Congratulations! You have won the game.",
+            buttonText: "OK",
+            isModal: isModal
+        );
+    }   
+#endregion
 }
