@@ -302,8 +302,8 @@ public class FreecellClassicGameManager : MonoBehaviour
     {
         FreecellClassicPopupManager.Instance.Show(
             popupType: PopupType.GameVictory,
-            message: "Congratulations! You have won the game.",
-            buttonText: "OK",
+            message: "Congratulations! You have won the game.", //TODO: Localize
+            buttonText: "OK", //TODO: Localize
             isModal: isModal,
             onOk: () =>
             {
