@@ -20,9 +20,6 @@ public class PopupManager : MonoBehaviour
 
     [Header("defaultPopup")] 
     [SerializeField] protected GameObject defaultPopupPrefab;
-    [SerializeField] protected TextMeshProUGUI defaultPopupMessageText;
-    [SerializeField] protected Button defaultPopupOkButton;
-    [SerializeField] protected Button defaultPopupCancelButton;
     
     [Header("Specific Popups")]
     [SerializeField] protected GameObject pausePopupPrefab;

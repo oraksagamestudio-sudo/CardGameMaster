@@ -8,4 +8,6 @@ public class FreecellClassicPopupManager : PopupManager
     {
         Instance = this;
     }
+
+    
 }

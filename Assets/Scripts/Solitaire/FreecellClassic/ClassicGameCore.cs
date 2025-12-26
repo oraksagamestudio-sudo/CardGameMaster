@@ -191,9 +191,12 @@ namespace Solitaire.FreecellClassic
             while (true)
             {
                 var mv = State.GetLegalMoves()
-                    .FirstOrDefault(m =>
+                    .Where(m =>
                         m.Kind == MoveKind.TableauToFoundation ||
-                        m.Kind == MoveKind.CellToFoundation);
+                        m.Kind == MoveKind.CellToFoundation)
+                    .OrderBy(m => State.FoundationTop[m.To])
+                    .ThenBy(m => m.To)
+                    .FirstOrDefault();
 
                 if (mv == null || mv.Kind == MoveKind.None)
                     break;
@@ -218,9 +221,12 @@ namespace Solitaire.FreecellClassic
             while (true)
             {
                 var mv = sim.GetLegalMoves()
-                    .FirstOrDefault(m =>
+                    .Where(m =>
                         m.Kind == MoveKind.TableauToFoundation ||
-                        m.Kind == MoveKind.CellToFoundation);
+                        m.Kind == MoveKind.CellToFoundation)
+                    .OrderBy(m => sim.FoundationTop[m.To])
+                    .ThenBy(m => m.To)
+                    .FirstOrDefault();
 
                 if (mv == null || mv.Kind == MoveKind.None)
                     break;

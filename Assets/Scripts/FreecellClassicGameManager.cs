@@ -2,12 +2,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Solitaire;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
 using NUnit.Framework;
+using UnityEngine.UI;
 public class FreecellClassicGameManager : MonoBehaviour
 {
     private static readonly WaitForSeconds _dealInterval = new(0.08f);
@@ -28,6 +30,8 @@ public class FreecellClassicGameManager : MonoBehaviour
     public event Action<int> OnCoinsChangedEvent;
     private bool _timerRunning = false;
     private bool _timerPaused = false;
+    [SerializeField] private Button autoFoundationButton;
+    private bool _autoFoundationAvailable = false;
 
 
     private void Awake() {
@@ -47,10 +51,10 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     void Update()
     {
-        if (Status == null || !_timerRunning || _timerPaused)
-            return;
+        if (Status != null && _timerRunning && !_timerPaused)
+            Status.ElapsedTime += Time.deltaTime;
 
-        Status.ElapsedTime += Time.deltaTime;
+        UpdateAutoFoundationButton();
     }
 
     public void AddScore(int value)
@@ -112,6 +116,7 @@ public class FreecellClassicGameManager : MonoBehaviour
         };
         StopTimer();
         OnStatusInitialized?.Invoke(Status);
+        UpdateAutoFoundationButton();
     }
 
     /// <summary>
@@ -260,6 +265,9 @@ public class FreecellClassicGameManager : MonoBehaviour
 
     public void AutoFoundation(bool useMotion = false)
     {
+        if (!IsAutoFoundationAvailable())
+            return;
+
         if (useMotion)
             StartCoroutine(AutoFoundationCoroutine());
         else
@@ -483,4 +491,28 @@ public class FreecellClassicGameManager : MonoBehaviour
         );
     }   
 #endregion
+
+    private bool IsAutoFoundationAvailable()
+    {
+        var game = GameContext.Classic;
+        if (game == null)
+            return false;
+
+        return game.State.GetLegalMoves().Any(m =>
+            m.Kind == MoveKind.TableauToFoundation ||
+            m.Kind == MoveKind.CellToFoundation);
+    }
+
+    private void UpdateAutoFoundationButton()
+    {
+        if (autoFoundationButton == null)
+            return;
+
+        var available = IsAutoFoundationAvailable();
+        if (available == _autoFoundationAvailable)
+            return;
+
+        _autoFoundationAvailable = available;
+        autoFoundationButton.interactable = available;
+    }
 }
