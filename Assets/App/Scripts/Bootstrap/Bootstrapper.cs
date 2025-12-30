@@ -10,6 +10,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -43,74 +44,10 @@ public class Bootstrapper : MonoBehaviour
 
     private IRemoteContentService remote;
 
-    private void UpdateProgress(float p01, string message)
+
+
+    private void Start()
     {
-        LastProgress = Mathf.Clamp01(p01);
-        LastMessage = message;
-
-        if (progressBar != null)
-            progressBar.value = LastProgress;
-
-        if (progressText != null)
-            progressText.text = $"{(int)(LastProgress * 100)}%";
-
-        if (progressMessage != null)
-            progressMessage.text = LastMessage;
-    }
-
-    /// <summary>
-    /// String Table(bootProgressTable)에서 key를 찾아 로컬라이즈 후 Report로 전달.
-    /// Smart String 인수를 args로 넘길 수 있음.
-    /// </summary>
-    private async Task ReportKeyAsync(float p01, string key, params object[] args)
-    {
-        string msg = key;
-        AsyncOperationHandle<string> handle = default;
-        try
-        {
-            // 로컬라이제이션 시스템 준비 대기
-            await LocalizationSettings.InitializationOperation.Task;
-
-            // Smart String 인수 처리 (Addressables AsyncOperationHandle<string> -> await handle.Task)
-            if (args != null && args.Length > 0)
-                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key, args);
-            else
-                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key);
-
-            await handle.Task;
-            msg = handle.Result;
-            if (string.IsNullOrEmpty(msg))
-                msg = key; // 키 미존재/빈 문자열일 때 안전망
-        }
-        catch
-        {
-            // 실패 시 key 그대로 표시 (개발 단계 안전망)
-            msg = key;
-        }
-
-        UpdateProgress(p01, msg);
-
-        if (handle.IsValid())
-        {
-            await DelayedRelease(handle);
-        }
-    }
-
-    private async Task DelayedRelease(AsyncOperationHandle handle)
-    {
-
-        if (slowLoadingMode)
-            await Task.Delay(500);
-        else
-            await Task.Delay(30);
-        if (handle.IsValid())
-            Addressables.Release(handle);
-    }
-
-    private async void Start()
-    {
-        
-
         // 싱글턴 처리
         if (Instance != null && Instance != this)
         {
@@ -119,7 +56,8 @@ public class Bootstrapper : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
+        /*
+        
         await ReportKeyAsync(0.05f, "boot_init_remote");
 
         // 1) 원격 콘텐츠 초기화
@@ -203,6 +141,71 @@ public class Bootstrapper : MonoBehaviour
                 await SceneManager.LoadSceneAsync(nextScene);
             }
         }
+        */
+    }
+
+    private void UpdateProgress(float p01, string message)
+    {
+        LastProgress = Mathf.Clamp01(p01);
+        LastMessage = message;
+
+        if (progressBar != null)
+            progressBar.value = LastProgress;
+
+        if (progressText != null)
+            progressText.text = $"{(int)(LastProgress * 100)}%";
+
+        if (progressMessage != null)
+            progressMessage.text = LastMessage;
+    }
+
+    /// <summary>
+    /// String Table(bootProgressTable)에서 key를 찾아 로컬라이즈 후 Report로 전달.
+    /// Smart String 인수를 args로 넘길 수 있음.
+    /// </summary>
+    private async Task ReportKeyAsync(float p01, string key, params object[] args)
+    {
+        string msg = key;
+        AsyncOperationHandle<string> handle = default;
+        try
+        {
+            // 로컬라이제이션 시스템 준비 대기
+            await LocalizationSettings.InitializationOperation.Task;
+
+            // Smart String 인수 처리 (Addressables AsyncOperationHandle<string> -> await handle.Task)
+            if (args != null && args.Length > 0)
+                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key, args);
+            else
+                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key);
+
+            await handle.Task;
+            msg = handle.Result;
+            if (string.IsNullOrEmpty(msg))
+                msg = key; // 키 미존재/빈 문자열일 때 안전망
+        }
+        catch
+        {
+            // 실패 시 key 그대로 표시 (개발 단계 안전망)
+            msg = key;
+        }
+
+        UpdateProgress(p01, msg);
+
+        if (handle.IsValid())
+        {
+            await DelayedRelease(handle);
+        }
+    }
+
+    private async Task DelayedRelease(AsyncOperationHandle handle)
+    {
+
+        if (slowLoadingMode)
+            await Task.Delay(500);
+        else
+            await Task.Delay(30);
+        if (handle.IsValid())
+            Addressables.Release(handle);
     }
 
     private async Task SetLocaleAsync()
@@ -300,4 +303,32 @@ public class Bootstrapper : MonoBehaviour
     PlayerPrefs.Save();
 #endif
     }
+
+
+    #region New Boot Flow
+    public bool IsInternetCheckDone { get; private set; } = false;
+    public void CheckInternetConnection()
+    {
+        StartCoroutine(CheckInternetConnectionRoutine());
+    }
+    private IEnumerator CheckInternetConnectionRoutine()
+    {
+
+        var reachability = Application.internetReachability;
+#if UNITY_ANDROID || UNITY_IOS
+        bool isWifi = reachability == NetworkReachability.ReachableViaLocalAreaNetwork;
+        bool isMobile = reachability == NetworkReachability.ReachableViaCarrierDataNetwork;
+        if (isWifi || isMobile)
+            Debug.Log($"[Bootstrapper] Network: {(isWifi ? "WiFi" : "Mobile")}");
+        else
+            Debug.LogWarning("[Bootstrapper] Network: NotReachable");
+#else
+        if (reachability == NetworkReachability.NotReachable)
+            Debug.LogWarning("[Bootstrapper] Network: NotReachable");
+#endif
+        IsInternetCheckDone = true;
+        yield break;
+    }
+    #endregion
+
 }
