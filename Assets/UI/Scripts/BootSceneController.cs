@@ -3,33 +3,54 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 public class BootSceneController : MonoBehaviour
 {
 
     [Header("Config")]
-    [SerializeField] private LogoController logoPanel;
-    [SerializeField] private float logoTime = 1.0f;
-    [SerializeField] private IntroController introPanel;
-    [SerializeField]  private bool autoLogin = true;
+    [SerializeField] private GameObject loadingPanel;
+    [SerializeField] private TextMeshProUGUI loadingMessage;
+    [SerializeField] private Slider loadingProgressBar;
+    [SerializeField] private TextMeshProUGUI loadingProgressValue;
+    [SerializeField] private GameObject loginPanel;
+    [SerializeField] private GameObject donePanel;
+    [SerializeField] private TextMeshProUGUI clientVersionText;
+    [SerializeField] private bool autoLogin = true;
 
     private void Start()
     {
-        StartCoroutine(BootFlow(logoTime));
+        StartCoroutine(BootFlow());
     }
 
-    private IEnumerator BootFlow(float logoTime)
+    private IEnumerator BootFlow()
     {
-        // TODO 로고 표시
-        yield return logoPanel.ShowLogoAsync(logoTime);
-
-        //bootstrapper 초기화는 알아서 됨.
+        float progress = 0f;
+        float step = 0.01f;
+        clientVersionText.text = $"v{Application.version}";
+        // 로딩패널 활성화
+        loadingPanel.SetActive(true);
+        
+        //bootstrapper 초기화는 첫프레임 끝나야 완료됨.
+        SetProgress(progress += step, "boot_init-bootstrapper");
+        yield return null;
         var bootstrapper = Bootstrapper.Instance;
-        // TODO 인트로로딩 화면 표시
-        introPanel.gameObject.SetActive(true);
+        // TODO 로딩오브젝트 초기화 후 순차적으로 로딩 진행하는 워크플로우로 변경 
+        // List<LoadingAction> loadingActions; // LoadingAction[int progressWeight, UnityAction action, string messageKey]
+        // loadingActions = new List<LoadingAction>()
+        // {
+        //     new LoadingAction(10, bootstrapper.CheckInternetConnection, "boot_chk-internet-connection"),
+        //     new LoadingAction(20, bootstrapper.CheckServerStatus, "boot_chk-server-status"),
+        //     new LoadingAction(20, bootstrapper.CheckForUpdates, "boot_chk-for-updates"),
+        //     new LoadingAction(20, bootstrapper.VerifyResourceIntegrity, "boot_verify-resource-integrity"),
+        //     new LoadingAction(20, bootstrapper.CheckEssentialData, "boot_chk-essential-data"),
+        //     new LoadingAction(10, bootstrapper.CheckLoginStatus, "boot_chk-login-status"),
+        // };
+
+        // LoadingAction.ExecuteAll(loadingActions, loadingPanel);
 
         //TODO [인트로로딩] Bootstrapper 인터넷 연결 체크 필요 (if no connection, go to error scene)
-        introPanel.SetProgress(0.1f, "boot_chk-internet-connection");
+        //introPanel.SetProgress(0.1f, "boot_chk-internet-connection");
         bootstrapper.CheckInternetConnection();
         float internetCheckTimeout = 5f;
         float elapsed = 0f;
@@ -110,5 +131,10 @@ public class BootSceneController : MonoBehaviour
     //     //TODO 로그인 체크
     //     return true;
     // }
-
+    private void SetProgress(float progress, string messagekey)
+    {
+        loadingProgressBar.value = progress;
+        loadingProgressValue.text = $"{(int)(progress * 100)}%";
+        loadingMessage.text = L.S("boot", messagekey);
+    }
 }
