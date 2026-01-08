@@ -11,9 +11,17 @@ using System.Threading.Tasks;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using UnityEngine.Networking;
 
 public class Bootstrapper : MonoBehaviour
 {
+    private sealed class PermissiveCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData)
+        {
+            return true;
+        }
+    }
     public static Bootstrapper Instance { get; private set; }
 
     // 글로벌 부트 진행 이벤트 (씬 간 공유)
@@ -22,25 +30,16 @@ public class Bootstrapper : MonoBehaviour
 
     // 부트씬이 참고할 상태
     public bool IsInitialized { get; private set; } = false;
-    public string NextSceneName { get; private set; } = "Lobby"; // 기본값 하나 잡아두기
 
     [Header("App Settings")]
     [SerializeField] private AppConfig appConfig;
-    [SerializeField] private bool useStop = false;
-    [SerializeField] private bool slowLoadingMode = false;
-
-    [Header("Localization")]
-    [SerializeField] private string bootProgressTable = "boot"; // String Table 이름 (예: "boot")
 
     [Header("Server Catalog")]
     [SerializeField] private HeartbeatPolicyRegistry heartbeatRegistry;
     [SerializeField] private string heartbeatUri = "/api/heartbeat.php";
     [SerializeField] private string heartbeatToken = ""; // 로그인 후 갱신 주입 가능
     [SerializeField] private string stageListRemoteUri = "/api/fetch_stage_seeds.php";
-    [Header("UI References")]
-    [SerializeField] private Slider progressBar;
-    [SerializeField] private TextMeshProUGUI progressMessage;
-    [SerializeField] private TextMeshProUGUI progressText;
+    
 
     private IRemoteContentService remote;
 
@@ -142,70 +141,6 @@ public class Bootstrapper : MonoBehaviour
             }
         }
         */
-    }
-
-    private void UpdateProgress(float p01, string message)
-    {
-        LastProgress = Mathf.Clamp01(p01);
-        LastMessage = message;
-
-        if (progressBar != null)
-            progressBar.value = LastProgress;
-
-        if (progressText != null)
-            progressText.text = $"{(int)(LastProgress * 100)}%";
-
-        if (progressMessage != null)
-            progressMessage.text = LastMessage;
-    }
-
-    /// <summary>
-    /// String Table(bootProgressTable)에서 key를 찾아 로컬라이즈 후 Report로 전달.
-    /// Smart String 인수를 args로 넘길 수 있음.
-    /// </summary>
-    private async Task ReportKeyAsync(float p01, string key, params object[] args)
-    {
-        string msg = key;
-        AsyncOperationHandle<string> handle = default;
-        try
-        {
-            // 로컬라이제이션 시스템 준비 대기
-            await LocalizationSettings.InitializationOperation.Task;
-
-            // Smart String 인수 처리 (Addressables AsyncOperationHandle<string> -> await handle.Task)
-            if (args != null && args.Length > 0)
-                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key, args);
-            else
-                handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(bootProgressTable, key);
-
-            await handle.Task;
-            msg = handle.Result;
-            if (string.IsNullOrEmpty(msg))
-                msg = key; // 키 미존재/빈 문자열일 때 안전망
-        }
-        catch
-        {
-            // 실패 시 key 그대로 표시 (개발 단계 안전망)
-            msg = key;
-        }
-
-        UpdateProgress(p01, msg);
-
-        if (handle.IsValid())
-        {
-            await DelayedRelease(handle);
-        }
-    }
-
-    private async Task DelayedRelease(AsyncOperationHandle handle)
-    {
-
-        if (slowLoadingMode)
-            await Task.Delay(500);
-        else
-            await Task.Delay(30);
-        if (handle.IsValid())
-            Addressables.Release(handle);
     }
 
     private async Task SetLocaleAsync()
@@ -329,6 +264,108 @@ public class Bootstrapper : MonoBehaviour
         IsInternetCheckDone = true;
         yield break;
     }
+
+    public IEnumerator CheckServerStatus(Action<bool> onCompleted)
+    {
+        bool serverOk = false;
+        // 서버 상태 체크 로직 (예: HTTP 요청)
+        var hbUrl = appConfig.serverUrl + heartbeatUri;
+        // if (Uri.TryCreate(hbUrl, UriKind.Absolute, out var hbUri) && hbUri.Scheme == Uri.UriSchemeHttp)
+        // {
+        //     var builder = new UriBuilder(hbUri)
+        //     {
+        //         Scheme = Uri.UriSchemeHttps,
+        //         Port = hbUri.Port == 80 ? -1 : hbUri.Port
+        //     };
+        //     hbUrl = builder.Uri.AbsoluteUri;
+        //     Debug.LogWarning($"[Bootstrapper] Insecure HTTP blocked; upgrading heartbeat to HTTPS: {hbUrl}");
+        // }
+
+        var www = UnityWebRequest.Get(hbUrl);
+        // Debug.Log($"[Bootstrapper] Checking server status: {www.url}");
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!string.IsNullOrEmpty(www.error) && www.error.Contains("SSL"))
+            {
+                Debug.LogWarning($"[Bootstrapper] SSL error on heartbeat; retrying with permissive cert handler: {www.error}");
+                www.Dispose();
+                www = UnityWebRequest.Get(hbUrl);
+                www.certificateHandler = new PermissiveCertificateHandler();
+                www.disposeCertificateHandlerOnDispose = true;
+                yield return www.SendWebRequest();
+            }
+#endif
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"[Bootstrapper] Server status check failed: {www.error}");
+                serverOk = false;
+            }
+        }
+        if (www.result == UnityWebRequest.Result.Success && www.responseCode != 200)
+        {
+            Debug.LogError($"[Bootstrapper] Server status check failed: HTTP {www.responseCode}");
+            serverOk = false;
+        }
+        else if (www.result == UnityWebRequest.Result.Success)
+        {
+            // 서버 응답 처리
+            Debug.Log("[Bootstrapper] Server status check success");
+            serverOk = true; // 실제 응답에 따라 결정
+        }
+        
+        onCompleted?.Invoke(serverOk);
+        yield break;
+    }
+
+
+    public IEnumerator CheckForUpdates(string currentVersion, Action<bool> onCompleted)
+    {
+        bool needUpdate = false;
+        // 업데이트 체크 로직 (예: HTTP 요청)
+        var updateUrl = appConfig.serverUrl + "/api/check_update.php?version=" + UnityWebRequest.EscapeURL(currentVersion);
+        var www = UnityWebRequest.Get(updateUrl);
+        
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError($"[Bootstrapper] Update check failed: {www.error}");
+            needUpdate = false; // 오류 시 업데이트 불필요로 간주
+        }
+        else if( www.responseCode != 200)
+        {
+            Debug.LogError($"[Bootstrapper] Update check failed: HTTP {www.responseCode}");
+            needUpdate = false; // 오류 시 업데이트 불필요로 간주
+        }
+        else
+        {
+            // 서버 응답 처리
+            // 예: {"need_update": true}
+            var json = www.downloadHandler.text;
+            try
+            {
+                var response = JsonUtility.FromJson<UpdateCheckResponse>(json);
+                needUpdate = response.need_update;
+                Debug.Log($"[Bootstrapper] Update check success: need_update={needUpdate}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Bootstrapper] Update check parse failed: {e.Message}");
+                needUpdate = false; // 파싱 오류 시 업데이트 불필요로 간주
+            }
+        }
+        
+        onCompleted?.Invoke(needUpdate);
+        yield break;
+    }
     #endregion
 
+}
+
+internal class UpdateCheckResponse
+{
+    public bool need_update;
 }

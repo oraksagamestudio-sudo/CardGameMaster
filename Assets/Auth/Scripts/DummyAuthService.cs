@@ -1,36 +1,34 @@
-using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class DummyAuthService : IAuthService
 {
-    private static readonly WaitForSeconds _waitForSeconds1_2 = new(1.2f);
-
     public string UserId { get; private set; }
     public string DisplayName { get; private set; }
     public string Provider { get; private set; }
 
-    public IEnumerator SignInWithGoogleAsync()
+    public async Task<bool> SignInWithGoogleAsync()
     {
         Provider = "Google";
-        yield return _waitForSeconds1_2;
+        await Task.Delay(1200);
         UserId = "dummy.google.user";
         DisplayName = "Guest";
         Debug.Log("[DummyAuth] Google SignIn success");
-        yield return true;
+        return true;
     }
 
-    public IEnumerator SignInWithAppleAsync()
+    public async Task<bool> SignInWithAppleAsync()
     {
 #if UNITY_IOS
         Provider = "Apple";
-        yield return _waitForSeconds1_2;
+        await Task.Delay(1200);
         UserId = "dummy.apple.user";
         DisplayName = "Guest";
         Debug.Log("[DummyAuth] Apple SignIn success");
-        yield return true;
+        return true;
 #else
         Debug.LogWarning("[DummyAuth] Apple SignIn only on iOS");
-        yield return false;
+        return false;
 #endif
     }
 }

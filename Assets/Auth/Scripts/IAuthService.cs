@@ -1,9 +1,9 @@
-using System.Collections;
+using System.Threading.Tasks;
 
 public interface IAuthService
 {
-    IEnumerator SignInWithGoogleAsync();
-    IEnumerator SignInWithAppleAsync();
+    Task<bool> SignInWithGoogleAsync();
+    Task<bool> SignInWithAppleAsync();
 
     string UserId { get; }
     string DisplayName { get; }

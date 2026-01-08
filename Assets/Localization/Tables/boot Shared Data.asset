@@ -16,87 +16,19 @@ MonoBehaviour:
   m_TableCollectionNameGuidString: 4dd7c526d05944755a7358fc411d75bb
   m_Entries:
   - m_Id: 7674519552
-    m_Key: boot_starting
+    m_Key: boot_init-bootstrapper
     m_Metadata:
       m_Items: []
-  - m_Id: 72405213184
-    m_Key: boot_init_remote
+  - m_Id: 22886615851458560
+    m_Key: boot_check-internet
     m_Metadata:
       m_Items: []
-  - m_Id: 75144093696
-    m_Key: boot_remote_ready
+  - m_Id: 22888764417236992
+    m_Key: boot_check-server-status
     m_Metadata:
       m_Items: []
-  - m_Id: 77560012800
-    m_Key: boot_loading_localization
-    m_Metadata:
-      m_Items: []
-  - m_Id: 84006658048
-    m_Key: boot_localization_ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 87315963904
-    m_Key: boot_selecting_locale
-    m_Metadata:
-      m_Items: []
-  - m_Id: 89253732352
-    m_Key: boot_locale_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 89706717184
-    m_Key: boot_attempt_autologin
-    m_Metadata:
-      m_Items: []
-  - m_Id: 90331668480
-    m_Key: boot_autologin_success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 90965008384
-    m_Key: boot_autologin_skipped
-    m_Metadata:
-      m_Items: []
-  - m_Id: 91627708416
-    m_Key: boot_autologin_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 92311379968
-    m_Key: boot_config_heartbeat
-    m_Metadata:
-      m_Items: []
-  - m_Id: 92877611008
-    m_Key: boot_heartbeat_ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 93578059776
-    m_Key: boot_selecting_next_scene
-    m_Metadata:
-      m_Items: []
-  - m_Id: 94244954112
-    m_Key: boot_next_scene
-    m_Metadata:
-      m_Items: []
-  - m_Id: 94953791488
-    m_Key: boot_complete
-    m_Metadata:
-      m_Items: []
-  - m_Id: 95683600384
-    m_Key: boot_ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 743862951936
-    m_Key: boot_loading_boot_scene
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2155519962767360
-    m_Key: boot_applying_stage_seeds
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2156514834898944
-    m_Key: boot_stage_seeds_applied
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2156754119942144
-    m_Key: boot_updating_stage_seeds
+  - m_Id: 22888919942029312
+    m_Key: boot_check-update
     m_Metadata:
       m_Items: []
   m_Metadata:

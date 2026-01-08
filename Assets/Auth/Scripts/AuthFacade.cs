@@ -22,7 +22,7 @@ public static class AuthFacade
             return false;
 
         // 더미 서비스에선 그냥 성공으로 처리
-        bool ok = await _service.SignInWithGoogleAsync();
+        bool ok = await _service.SignInWithGoogleAsync(); 
         return ok;
     }
 
