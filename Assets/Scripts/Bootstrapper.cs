@@ -400,6 +400,16 @@ public class Bootstrapper : MonoBehaviour
         onCompleted?.Invoke(integrityOk);
         yield break;
     }
+
+    public IEnumerator LoadUserData(Action<bool> onCompleted)
+    {
+        bool userDataOk = false;
+        // 사용자 데이터 로드 로직 (예: HTTP 요청)
+        yield return new WaitForSeconds(1.0f); // 더미 대기
+        userDataOk = true; // 성공으로 간주
+        onCompleted?.Invoke(userDataOk);
+        yield break;
+    }
 #endregion
 
 }

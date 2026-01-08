@@ -1,4 +1,5 @@
 // Assets/Auth/Scripts/AuthFacade.cs
+using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -39,4 +40,16 @@ public static class AuthFacade
     {
         PlayerPrefs.DeleteKey("autoLogin");
     }
+
+#region New Auth Methods with Callbacks
+    public static IEnumerator TryAutoLogin(System.Action<bool> onCompleted)
+    {
+        Task<bool> loginTask = TryAutoLoginAsync();
+        while (!loginTask.IsCompleted)
+        {
+            yield return null;
+        }
+        onCompleted?.Invoke(loginTask.Result);
+    }
+#endregion
 }

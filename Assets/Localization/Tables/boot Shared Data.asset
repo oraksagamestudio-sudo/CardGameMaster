@@ -39,6 +39,10 @@ MonoBehaviour:
     m_Key: boot_check-resources
     m_Metadata:
       m_Items: []
+  - m_Id: 23184063530524672
+    m_Key: boot_start-heartbeat
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
