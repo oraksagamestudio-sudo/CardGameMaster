@@ -11,7 +11,4 @@ public class AppConfig : ScriptableObject
 
     [Header("Localization Default")]
     public SystemLanguage defaultLanguage = SystemLanguage.Unknown;
-
-    [Header("Version Info")]
-    public string buildVersion = "1.0.10";
 }

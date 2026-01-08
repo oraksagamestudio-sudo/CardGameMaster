@@ -78,6 +78,16 @@ public class BootSceneController : MonoBehaviour
             yield break;
         }
 
+        // + 리소스 무결성 체크
+        yield return SetProgress(0.5f, "boot_check-resources");
+        bool resourcesOk = false;
+        yield return bootstrapper.CheckResourceIntegrity((ok) => resourcesOk = ok);
+        if (!resourcesOk)
+        {
+            Debug.LogError("[Boot] Resource integrity check failed.");
+            SceneManager.LoadScene("Update"); // [리소스 무결성 오류] 업데이트
+            yield break;
+        }
         //TODO [인트로로딩] Bootstrapper 리소스 무결성 체크 필요 (if need update, do update)
         //TODO [인트로로딩] Bootstrapper 필수 데이터 체크 필요 (if no data, do download)
         //TODO [인트로로딩] Bootstrapper 로그인체크 필요(if not logged in, go to login scene)
@@ -156,6 +166,6 @@ public class BootSceneController : MonoBehaviour
         loadingProgressBar.value = progress;
         loadingProgressValue.text = $"{(int)(progress * 100)}%";
         loadingMessage.text = L.S("boot", messagekey);
-        yield return new WaitForSeconds(useFastBoot ? 0.1f : 0.5f);
+        yield return new WaitForSeconds(useFastBoot ? 0.5f : 1f);
     }
 }

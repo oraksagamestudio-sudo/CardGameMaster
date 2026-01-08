@@ -34,6 +34,14 @@ MonoBehaviour:
     m_Localized: Version Checking...
     m_Metadata:
       m_Items: []
+  - m_Id: 23144561483177984
+    m_Localized: Load Complete!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23145987177439232
+    m_Localized: Check Resources...
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

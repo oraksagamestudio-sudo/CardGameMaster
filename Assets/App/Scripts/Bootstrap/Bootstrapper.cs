@@ -240,7 +240,7 @@ public class Bootstrapper : MonoBehaviour
     }
 
 
-    #region New Boot Flow
+#region New Boot Flow
     public bool IsInternetCheckDone { get; private set; } = false;
     public void CheckInternetConnection()
     {
@@ -361,8 +361,52 @@ public class Bootstrapper : MonoBehaviour
         onCompleted?.Invoke(needUpdate);
         yield break;
     }
-    #endregion
 
+    public IEnumerator CheckResourceIntegrity(Action<bool> onCompleted)
+    {
+        bool integrityOk = false;
+        // 리소스 무결성 체크 로직 (예: 파일 해시 체크)
+        var integrityUrl = appConfig.serverUrl + "/api/check_integrity.php";
+        var www = UnityWebRequest.Get(integrityUrl);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError($"[Bootstrapper] Resource integrity check failed: {www.error}");
+            integrityOk = false; // 오류 시 무결성 불필요로 간주
+        }
+        else if (www.responseCode != 200)
+        {
+            Debug.LogError($"[Bootstrapper] Resource integrity check failed: HTTP {www.responseCode}");
+            integrityOk = false; // 오류 시 무결성 불필요로 간주
+        }
+        else
+        {
+            // 서버 응답 처리
+            var json = www.downloadHandler.text;
+            try
+            {
+                var response = JsonUtility.FromJson<IntegrityCheckResponse>(json);
+                integrityOk = response.integrity_ok;
+                Debug.Log($"[Bootstrapper] Resource integrity check success: integrity_ok={integrityOk}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Bootstrapper] Resource integrity check parse failed: {e.Message}");
+                integrityOk = false; // 파싱 오류 시 무결성 불필요로 간주
+            }
+        }
+
+        onCompleted?.Invoke(integrityOk);
+        yield break;
+    }
+#endregion
+
+}
+
+internal class IntegrityCheckResponse
+{
+    public bool integrity_ok;
 }
 
 internal class UpdateCheckResponse
