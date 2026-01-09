@@ -43,6 +43,22 @@ MonoBehaviour:
     m_Key: boot_start-heartbeat
     m_Metadata:
       m_Items: []
+  - m_Id: 23361774605557760
+    m_Key: login_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361824870096896
+    m_Key: login_google
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361886396342272
+    m_Key: login_apple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361929002082304
+    m_Key: login_guest
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

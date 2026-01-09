@@ -46,6 +46,22 @@ MonoBehaviour:
     m_Localized: Connecting Server...
     m_Metadata:
       m_Items: []
+  - m_Id: 23361824870096896
+    m_Localized: Sign In With Google
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361886396342272
+    m_Localized: Sign In With Apple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361929002082304
+    m_Localized: Start With Guest Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23361774605557760
+    m_Localized: 'Please Choose One :'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
