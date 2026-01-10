@@ -490,6 +490,13 @@ MonoBehaviour:
   clientVersionText: {fileID: 1790346173}
   autoLogin: 0
   useFastBoot: 0
+  skipBootFlow: 0
+  goToLobbyDirectly: 0
+  goToOfflineModeDirectly: 0
+  goToUpdateDirectly: 0
+  showLoginPanelDirectly: 0
+  showDonePanelDirectly: 0
+  stopWhenLoadingComplete: 0
 --- !u!4 &536572744
 Transform:
   m_ObjectHideFlags: 0
@@ -1291,7 +1298,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

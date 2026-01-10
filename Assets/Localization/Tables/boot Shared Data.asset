@@ -59,6 +59,10 @@ MonoBehaviour:
     m_Key: login_guest
     m_Metadata:
       m_Items: []
+  - m_Id: 24095723355103232
+    m_Key: boot_init-localization
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

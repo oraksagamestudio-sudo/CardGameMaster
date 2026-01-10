@@ -62,6 +62,10 @@ MonoBehaviour:
     m_Localized: 'Please Choose One :'
     m_Metadata:
       m_Items: []
+  - m_Id: 24095723355103232
+    m_Localized: Set Locale..
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -53,104 +53,103 @@ public class Bootstrapper : MonoBehaviour
         
     }
 
-    // private async Task SetLocaleAsync()
-    // {
-    //     await LocalizationSettings.InitializationOperation.Task;
+    public IEnumerator SetLocale()
+    {
+        yield return LocalizationSettings.InitializationOperation;
 
-    //     // ✅ Unity 내부 Locale 자동 선택이 끝날 때까지 한 프레임 대기
-    //     await Task.Yield();
+        if (appConfig.defaultLanguage == SystemLanguage.Unknown)
+        {
+            // 이 시점에는 SelectedLocale이 실제 반영된 상태
+            var currentLocale = LocalizationSettings.SelectedLocale;
+            string code = currentLocale?.Identifier.Code ?? "en";
 
-    //     if (appConfig.defaultLanguage == SystemLanguage.Unknown)
-    //     {
-    //         // 이 시점에는 SelectedLocale이 실제 반영된 상태
-    //         var currentLocale = LocalizationSettings.SelectedLocale;
-    //         string code = currentLocale?.Identifier.Code ?? "en";
+            if (code.StartsWith("ko"))
+                appConfig.defaultLanguage = SystemLanguage.Korean;
+            else
+                appConfig.defaultLanguage = SystemLanguage.English;
 
-    //         if (code.StartsWith("ko"))
-    //             appConfig.defaultLanguage = SystemLanguage.Korean;
-    //         else
-    //             appConfig.defaultLanguage = SystemLanguage.English;
+            SaveAppConfig();
+            Debug.Log($"[Bootstrapper] First-run detected. Language auto-saved: {appConfig.defaultLanguage}");
+            yield break;
+        }
 
-    //         SaveAppConfig();
-    //         Debug.Log($"[Bootstrapper] First-run detected. Language auto-saved: {appConfig.defaultLanguage}");
-    //         return;
-    //     }
+        // 이후 실행 시 AppConfig 기반 강제 적용
+        var available = LocalizationSettings.AvailableLocales;
+        Locale targetLocale = FindLocaleByLanguage(available, appConfig.defaultLanguage);
 
-    //     // 이후 실행 시 AppConfig 기반 강제 적용
-    //     var available = LocalizationSettings.AvailableLocales;
-    //     Locale targetLocale = FindLocaleByLanguage(available, appConfig.defaultLanguage);
+        if (targetLocale != null && LocalizationSettings.SelectedLocale != targetLocale)
+        {
+            LocalizationSettings.SelectedLocale = targetLocale;
+            Debug.Log($"[Bootstrapper] Locale fixed from AppConfig: {targetLocale.Identifier.Code}");
+        }
+    }
 
-    //     if (targetLocale != null && LocalizationSettings.SelectedLocale != targetLocale)
-    //     {
-    //         LocalizationSettings.SelectedLocale = targetLocale;
-    //         Debug.Log($"[Bootstrapper] Locale fixed from AppConfig: {targetLocale.Identifier.Code}");
-    //     }
-    // }
+    /// <summary>
+    /// Helper to find locale by SystemLanguage
+    /// </summary>
+    private Locale FindLocaleByLanguage(ILocalesProvider available, SystemLanguage lang)
+    {
+        if (available == null) return null;
 
-    // /// <summary>
-    // /// Helper to find locale by SystemLanguage
-    // /// </summary>
-    // private Locale FindLocaleByLanguage(ILocalesProvider available, SystemLanguage lang)
-    // {
-    //     if (available == null) return null;
+        // ✅ SystemLanguage를 ISO 코드(ko, en 등)로 변환
+        string isoCode = GetIsoCodeFromSystemLanguage(lang);
 
-    //     // ✅ SystemLanguage를 ISO 코드(ko, en 등)로 변환
-    //     string isoCode = GetIsoCodeFromSystemLanguage(lang);
+        var locales = available.Locales;
+        if (locales == null || locales.Count == 0) return null;
 
-    //     var locales = available.Locales;
-    //     if (locales == null || locales.Count == 0) return null;
+        // 1️⃣ 정확히 일치하는 코드 우선
+        Locale exact = locales.FirstOrDefault(l =>
+            l.Identifier.Code.Equals(isoCode, StringComparison.OrdinalIgnoreCase) ||
+            l.Identifier.CultureInfo?.TwoLetterISOLanguageName == isoCode);
+        if (exact != null)
+            return exact;
 
-    //     // 1️⃣ 정확히 일치하는 코드 우선
-    //     Locale exact = locales.FirstOrDefault(l =>
-    //         l.Identifier.Code.Equals(isoCode, StringComparison.OrdinalIgnoreCase) ||
-    //         l.Identifier.CultureInfo?.TwoLetterISOLanguageName == isoCode);
-    //     if (exact != null)
-    //         return exact;
+        // 2️⃣ 접두어 일치 허용 (ko-KR vs ko)
+        return locales.FirstOrDefault(l =>
+            l.Identifier.Code.StartsWith(isoCode, StringComparison.OrdinalIgnoreCase) ||
+            (l.Identifier.CultureInfo != null &&
+             l.Identifier.CultureInfo.TwoLetterISOLanguageName == isoCode));
+    }
 
-    //     // 2️⃣ 접두어 일치 허용 (ko-KR vs ko)
-    //     return locales.FirstOrDefault(l =>
-    //         l.Identifier.Code.StartsWith(isoCode, StringComparison.OrdinalIgnoreCase) ||
-    //         (l.Identifier.CultureInfo != null &&
-    //          l.Identifier.CultureInfo.TwoLetterISOLanguageName == isoCode));
-    // }
+    /// <summary>
+    /// SystemLanguage → ISO 639-1 code 변환 (ko, en 등)
+    /// </summary>
+    private string GetIsoCodeFromSystemLanguage(SystemLanguage lang)
+    {
+        switch (lang)
+        {
+            case SystemLanguage.Korean: return "ko";
+            case SystemLanguage.English: return "en";
+            case SystemLanguage.Japanese: return "ja";
+            case SystemLanguage.ChineseSimplified:
+            case SystemLanguage.ChineseTraditional:
+            case SystemLanguage.Chinese: return "zh";
+            case SystemLanguage.French: return "fr";
+            case SystemLanguage.German: return "de";
+            case SystemLanguage.Spanish: return "es";
+            case SystemLanguage.Italian: return "it";
+            case SystemLanguage.Russian: return "ru";
+            default:
+                return lang.ToString().Substring(0, 2).ToLowerInvariant();
+        }
+    }
 
-//     /// <summary>
-//     /// SystemLanguage → ISO 639-1 code 변환 (ko, en 등)
-//     /// </summary>
-//     private string GetIsoCodeFromSystemLanguage(SystemLanguage lang)
-//     {
-//         switch (lang)
-//         {
-//             case SystemLanguage.Korean: return "ko";
-//             case SystemLanguage.English: return "en";
-//             case SystemLanguage.Japanese: return "ja";
-//             case SystemLanguage.ChineseSimplified:
-//             case SystemLanguage.ChineseTraditional:
-//             case SystemLanguage.Chinese: return "zh";
-//             case SystemLanguage.French: return "fr";
-//             case SystemLanguage.German: return "de";
-//             case SystemLanguage.Spanish: return "es";
-//             case SystemLanguage.Italian: return "it";
-//             case SystemLanguage.Russian: return "ru";
-//             default:
-//                 return lang.ToString().Substring(0, 2).ToLowerInvariant();
-//         }
-//     }
-
-//     private void SaveAppConfig()
-//     {
-// #if UNITY_EDITOR
-//         // UnityEditor.EditorUtility.SetDirty(appConfig);
-//         // UnityEditor.AssetDatabase.SaveAssets();
-// #else
-//     // 런타임 환경에서는 PlayerPrefs로 보관 (ScriptableObject는 빌드 후 저장 불가)
-//     PlayerPrefs.SetString("AppConfig.Language", appConfig.defaultLanguage.ToString());
-//     PlayerPrefs.Save();
-// #endif
-//     }
+    private void SaveAppConfig()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(appConfig);
+        UnityEditor.AssetDatabase.SaveAssets();
+#else
+    // 런타임 환경에서는 PlayerPrefs로 보관 (ScriptableObject는 빌드 후 저장 불가)
+    PlayerPrefs.SetString("AppConfig.Language", appConfig.defaultLanguage.ToString());
+    PlayerPrefs.Save();
+#endif
+    }
 
 
 #region New Boot Flow
+
+
     public bool IsInternetCheckDone { get; private set; } = false;
     public void CheckInternetConnection()
     {

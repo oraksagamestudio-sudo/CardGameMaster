@@ -18,7 +18,14 @@ public class BootSceneController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI clientVersionText;
     [SerializeField] private bool autoLogin = true;
     [SerializeField] private bool useFastBoot = false;
-    
+    [Header("Debug")]
+    [SerializeField] private bool skipBootFlow = false;
+    [SerializeField] private bool goToLobbyDirectly = false;
+    [SerializeField] private bool goToOfflineModeDirectly = false;
+    [SerializeField] private bool goToUpdateDirectly = false;
+    [SerializeField] private bool showLoginPanelDirectly = false;
+    [SerializeField] private bool showDonePanelDirectly = false;
+    [SerializeField] private bool stopWhenLoadingComplete = false; // Editor 전용: 로딩 완료 후 멈춤
 
     private void Start()
     {
@@ -29,9 +36,58 @@ public class BootSceneController : MonoBehaviour
 
     private IEnumerator BootFlow()
     {
+
+        // + 로컬라이제이션 초기화
+        yield return SetProgress(0.7f, "boot_init-localization");
+        yield return Bootstrapper.Instance.SetLocale();
+        var locale = LocalizationSettings.SelectedLocale;
+        Debug.Log($"[Boot] Localization initialized. Locale: {locale.Identifier.Code}");
+
         // 로딩패널 활성화
         loadingPanel.SetActive(true);
 
+        if (skipBootFlow)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            SceneManager.LoadScene("Lobby");
+            yield break;
+        }
+        if (goToLobbyDirectly)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            SceneManager.LoadScene("Lobby");
+            yield break;
+        }
+        if (goToOfflineModeDirectly)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            SceneManager.LoadScene("OfflineMode");
+            yield break;
+        }
+        if (goToUpdateDirectly)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            SceneManager.LoadScene("Update");
+            yield break;
+        }
+        if (showLoginPanelDirectly)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            loginPanel.SetActive(true);
+            yield break;
+        }
+        if (showDonePanelDirectly)
+        {
+            yield return SetProgress(1f, "boot_complete");
+            loadingPanel.SetActive(false);
+            donePanel.SetActive(true);
+            yield break;
+        }
 
         // ## 로딩 시작 ##
 
@@ -101,12 +157,6 @@ public class BootSceneController : MonoBehaviour
         // }
 
 
-        // + 로컬라이제이션 초기화
-        yield return SetProgress(0.7f, "boot_init-localization");
-        yield return LocalizationSettings.InitializationOperation;
-        Debug.Log("[Boot] Localization initialized.");
-
-
         // + 자동로그인 시도 (if auto login fail, show login panel)
         yield return SetProgress(0.8f, "boot_auto-login");
         bool loginOk = false;
@@ -157,6 +207,11 @@ public class BootSceneController : MonoBehaviour
         yield return SetProgress(1f, "boot_complete");
 
         // ## 로딩 끝 ##
+#if UNITY_EDITOR
+        Debug.Log("[Boot] Boot flow completed.");
+        if (stopWhenLoadingComplete)
+            yield break;
+#endif
 
         loadingPanel.SetActive(false);
         SceneManager.LoadScene("Lobby");
