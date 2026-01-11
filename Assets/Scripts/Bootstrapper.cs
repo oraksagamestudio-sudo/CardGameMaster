@@ -416,7 +416,7 @@ public class Bootstrapper : MonoBehaviour
         onCompleted?.Invoke(integrityOk);
         yield break;
     }
-
+    //TODO: 유저 데이터 받아오는 워크플로우 구현하기
     public IEnumerator LoadUserData(Action<bool> onCompleted)
     {
         bool userDataOk = false;
