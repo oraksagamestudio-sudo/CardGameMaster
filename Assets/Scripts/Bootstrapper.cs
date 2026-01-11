@@ -12,6 +12,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using UnityEngine.Networking;
+using Unity.Services.Core;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class Bootstrapper : MonoBehaviour
 
 
 
-    private void Start()
+    private async void Start()
     {
         // 싱글턴 처리
         if (Instance != null && Instance != this)
@@ -50,7 +51,12 @@ public class Bootstrapper : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        
+        await UnityServices.InitializeAsync();
+        Debug.Log("[Bootstrapper] Unity Services Initialized");
+        IsInitialized = true;
+
+        Debug.Log("[Bootstrapper] Bootstrapper started");
+
     }
 
     public IEnumerator SetLocale()
@@ -62,6 +68,15 @@ public class Bootstrapper : MonoBehaviour
             // SelectedLocale은 초기화 타이밍에 따라 변경될 수 있으므로
             // 운영체제의 시스템 언어를 우선 사용하고, 시스템언어가 Unknown일 때만 SelectedLocale을 보조로 사용합니다.
             SystemLanguage sys = Application.systemLanguage;
+
+#if UNITY_EDITOR
+            var simLang = GetEditorSimulatorSystemLanguage();
+            if (simLang.HasValue)
+            {
+                sys = simLang.Value;
+                Debug.Log($"[Bootstrapper] Editor simulator language detected: {sys}");
+            }
+#endif
 
             if (sys == SystemLanguage.Unknown)
             {
@@ -141,6 +156,90 @@ public class Bootstrapper : MonoBehaviour
                 return lang.ToString().Substring(0, 2).ToLowerInvariant();
         }
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// 에디터에서 Device Simulator 등 시뮬레이터가 제공하는 시스템언어를 리플렉션으로 시도해서 가져옵니다.
+    /// 존재하지 않으면 null을 반환합니다.
+    /// </summary>
+    private SystemLanguage? GetEditorSimulatorSystemLanguage()
+    {
+        try
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var asm in assemblies)
+            {
+                foreach (var t in asm.GetTypes())
+                {
+                    if (!t.Name.ToLowerInvariant().Contains("simul"))
+                        continue;
+
+                    // 탐색: static property 또는 field로 언어 정보를 노출하는 경우
+                    var prop = t.GetProperty("language") ?? t.GetProperty("Language") ?? t.GetProperty("SimulatedLanguage") ?? t.GetProperty("SystemLanguage");
+                    if (prop != null)
+                    {
+                        object val = null;
+                        if (prop.GetMethod.IsStatic)
+                            val = prop.GetValue(null);
+                        else
+                        {
+                            // 인스턴스가 필요하면 가능한 static Instance 프로퍼티를 찾아 사용
+                            var instProp = t.GetProperty("instance") ?? t.GetProperty("Instance");
+                            if (instProp != null)
+                            {
+                                var inst = instProp.GetValue(null);
+                                if (inst != null)
+                                    val = prop.GetValue(inst);
+                            }
+                        }
+
+                        if (val is SystemLanguage sl)
+                            return sl;
+                        if (val is string s)
+                        {
+                            if (Enum.TryParse<SystemLanguage>(s, true, out var parsed))
+                                return parsed;
+                        }
+                    }
+
+                    // Locale/Identifier 같은 형태로 보관할 수도 있음
+                    var localeProp = t.GetProperty("Locale") ?? t.GetProperty("locale") ?? t.GetProperty("SelectedLocale");
+                    if (localeProp != null)
+                    {
+                        object loc = null;
+                        if (localeProp.GetMethod.IsStatic)
+                            loc = localeProp.GetValue(null);
+                        else
+                        {
+                            var instProp = t.GetProperty("instance") ?? t.GetProperty("Instance");
+                            if (instProp != null)
+                            {
+                                var inst = instProp.GetValue(null);
+                                if (inst != null)
+                                    loc = localeProp.GetValue(inst);
+                            }
+                        }
+
+                        if (loc != null)
+                        {
+                            var codeProp = loc.GetType().GetProperty("Identifier")?.PropertyType.GetProperty("Code");
+                            // 위 방식이 복잡하면 ToString으로 파싱 시도
+                            var code = loc.ToString();
+                            if (!string.IsNullOrEmpty(code) && code.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+                                return SystemLanguage.Korean;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // 안전하게 무시
+        }
+
+        return null;
+    }
+#endif
 
     private void SaveAppConfig()
     {

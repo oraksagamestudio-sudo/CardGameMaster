@@ -154,10 +154,10 @@ RectTransform:
   - {fileID: 1312363129}
   m_Father: {fileID: 561391270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -370}
-  m_SizeDelta: {x: 800, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &211233267
 MonoBehaviour:
@@ -481,6 +481,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e30749d07fb64ed2a59c02d54778b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BootSceneController
+  introGameTitle: {fileID: 1543316096}
   loadingPanel: {fileID: 1943593683}
   loadingMessage: {fileID: 1604449204}
   loadingProgressBar: {fileID: 1126713834}
@@ -488,8 +489,8 @@ MonoBehaviour:
   loginPanel: {fileID: 2114937972}
   donePanel: {fileID: 2102514466}
   clientVersionText: {fileID: 1790346173}
-  autoLogin: 0
-  useFastBoot: 0
+  autoLogin: 1
+  useFastBoot: 1
   skipBootFlow: 0
   goToLobbyDirectly: 0
   goToOfflineModeDirectly: 0
@@ -556,7 +557,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 800, y: 590}
+  m_SizeDelta: {x: 800, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &561391272
 MonoBehaviour:
@@ -819,6 +820,57 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1 &723224892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 723224893}
+  - component: {fileID: 723224894}
+  m_Layer: 5
+  m_Name: LoginController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &723224893
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723224892}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2114937973}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &723224894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723224892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc2ee5fff09314b6aa01a95cf9aefebb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  googleLoginButton: {fileID: 889344146}
+  appleLoginButton: {fileID: 211233267}
+  guestModeButton: {fileID: 1110676118}
 --- !u!1 &889344144
 GameObject:
   m_ObjectHideFlags: 0
@@ -854,10 +906,10 @@ RectTransform:
   - {fileID: 1835074549}
   m_Father: {fileID: 561391270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -220}
-  m_SizeDelta: {x: 800, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &889344146
 MonoBehaviour:
@@ -1129,10 +1181,10 @@ RectTransform:
   - {fileID: 1173075502}
   m_Father: {fileID: 561391270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -520}
-  m_SizeDelta: {x: 800, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1110676118
 MonoBehaviour:
@@ -1331,7 +1383,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1150671826}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
@@ -1400,7 +1452,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1990514797}
-  - {fileID: 2114937973}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1468,8 +1519,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '[Start With Guest Mode]'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
-  m_sharedMaterial: {fileID: 1398276418512518821, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
+  m_sharedMaterial: {fileID: 536835591883798557, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1629,8 +1680,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '[Login With Apple]'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
-  m_sharedMaterial: {fileID: 1398276418512518821, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
+  m_sharedMaterial: {fileID: 536835591883798557, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1933,7 +1984,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1543316095
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1973,9 +2024,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: cdae6268dbca1421bab3dc749ccba3d2, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -2507,8 +2558,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '[Login With Google]'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
-  m_sharedMaterial: {fileID: 1398276418512518821, guid: 4e0ebd297b0330b41ae3408308a63e81, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
+  m_sharedMaterial: {fileID: 536835591883798557, guid: df90453aa3f7c49f197b36f133801d4b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2994,6 +3045,7 @@ RectTransform:
   - {fileID: 1790346172}
   - {fileID: 1943593684}
   - {fileID: 2102514467}
+  - {fileID: 2114937973}
   m_Father: {fileID: 1150671830}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3160,10 +3212,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 561391270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -20}
-  m_SizeDelta: {x: 800, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &2054960451
 MonoBehaviour:
@@ -3305,7 +3357,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2102514467
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3381,7 +3433,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2114937973
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3389,13 +3441,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2114937972}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 723224893}
   - {fileID: 561391270}
-  m_Father: {fileID: 1150671830}
+  m_Father: {fileID: 1990514797}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -3415,7 +3468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.8}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.9019608}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

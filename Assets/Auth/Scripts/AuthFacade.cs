@@ -1,6 +1,7 @@
 // Assets/Auth/Scripts/AuthFacade.cs
 using System.Collections;
 using System.Threading.Tasks;
+using Unity.Services.Authentication;
 using UnityEngine;
 
 public static class AuthFacade
@@ -16,13 +17,12 @@ public static class AuthFacade
     /// </summary>
     public static async Task<bool> TryAutoLoginAsync()
     {
-        // TODO: 실제 구현에서는 PlayerPrefs나 키체인에 저장된 토큰 확인
-        // 지금은 "autoLogin" 키가 1이면 무조건 진입하는 형태로 간단하게
-        int auto = PlayerPrefs.GetInt("autoLogin", 0);
-        if (auto == 0)
-            return false;
-
-        // 더미 서비스에선 그냥 성공으로 처리
+        if (AuthenticationService.Instance.IsSignedIn)
+        {
+            Debug.Log("[AuthFacade] Already signed in.");
+            return true;
+        }
+        
         bool ok = await _service.SignInWithGoogleAsync(); 
         return ok;
     }
@@ -36,20 +36,18 @@ public static class AuthFacade
         PlayerPrefs.Save();
     }
 
-    public static void DisableAutoLogin()
-    {
-        PlayerPrefs.DeleteKey("autoLogin");
-    }
 
-#region New Auth Methods with Callbacks
-    public static IEnumerator TryAutoLogin(System.Action<bool> onCompleted)
+    #region New Auth Methods with Callbacks
+    
+    public static void TryAutoLogin(System.Action<bool> onCompleted)
     {
-        Task<bool> loginTask = TryAutoLoginAsync();
-        while (!loginTask.IsCompleted)
-        {
-            yield return null;
-        }
-        onCompleted?.Invoke(loginTask.Result);
+        bool isSignedIn = AuthenticationService.Instance.IsSignedIn;
+        if (isSignedIn)
+            Debug.Log("[AuthFacade] Already signed in.");
+        var uid = AuthenticationService.Instance.PlayerId;
+        var aceessToken = AuthenticationService.Instance.AccessToken;
+        // TODO: 서버에서 유저 로그인 성공여부만 받아오기
+        onCompleted?.Invoke(isSignedIn);
     }
 #endregion
 }

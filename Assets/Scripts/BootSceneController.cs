@@ -9,6 +9,7 @@ public class BootSceneController : MonoBehaviour
 {
 
     [Header("Config")]
+    [SerializeField] private Image introGameTitle;
     [SerializeField] private GameObject loadingPanel;
     [SerializeField] private TextMeshProUGUI loadingMessage;
     [SerializeField] private Slider loadingProgressBar;
@@ -36,6 +37,13 @@ public class BootSceneController : MonoBehaviour
 
         StartCoroutine(BootFlow());
     }
+    
+    private static void SetTitleImage(ref Image imageComponent, string resourcePath)
+    {
+        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        imageComponent.sprite = sprite;
+        imageComponent.rectTransform.sizeDelta = new Vector2(sprite.rect.size.x, sprite.rect.size.y);
+    }
 
     private IEnumerator BootFlow()
     {
@@ -49,6 +57,21 @@ public class BootSceneController : MonoBehaviour
         yield return bootstrapper.SetLocale();
         var locale = LocalizationSettings.SelectedLocale;
         Debug.Log($"[Boot] Localization initialized. Locale: {locale.Identifier.Code}");
+
+        // + 언어에 따른 인트로 타이틀 표시
+        switch (locale.Identifier.Code)
+        {
+            case "ko":
+                SetTitleImage(ref introGameTitle, "Images/intro-title");
+                break;
+                
+            default:
+            case "en":
+                SetTitleImage(ref introGameTitle, "Images/intro-title_global");
+                break;
+        }
+
+        introGameTitle.gameObject.SetActive(true);
 
         // 패널 상태 초기화
         loginPanel.SetActive(false);
@@ -175,9 +198,16 @@ public class BootSceneController : MonoBehaviour
         // + 자동로그인 시도 (if auto login fail, show login panel)
         yield return SetProgress(0.8f, "boot_auto-login");
         bool loginOk = false;
-        if (autoLogin)
+        
+        // 자동로그인 설정 확인(1이면 로그인 이력 있음)
+        bool autoLoginInPref = PlayerPrefs.GetInt("autoLogin", 0) == 1;
+        
+        if (autoLogin && autoLoginInPref)
         {
-            yield return AuthFacade.TryAutoLogin((ok) => loginOk = ok);
+            AuthFacade.TryAutoLogin((ok) =>
+            {
+                loginOk = ok;
+            });
         }
         if (!loginOk)
         {
