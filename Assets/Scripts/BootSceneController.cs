@@ -26,6 +26,9 @@ public class BootSceneController : MonoBehaviour
     [SerializeField] private bool showLoginPanelDirectly = false;
     [SerializeField] private bool showDonePanelDirectly = false;
     [SerializeField] private bool stopWhenLoadingComplete = false; // Editor 전용: 로딩 완료 후 멈춤
+    [SerializeField] private bool simulateNoInternet = false; // Editor 전용: 인터넷 연결 없음 시뮬레이션
+    [SerializeField] private bool simulateServerMaintenance = false; // Editor 전용: 서버 점검 중 시뮬레이션
+    [SerializeField] private bool useDonePanelAfterLogin = true; // Editor 전용: 로그인 후 완료 패널 표시
 
     private void Start()
     {
@@ -37,13 +40,19 @@ public class BootSceneController : MonoBehaviour
     private IEnumerator BootFlow()
     {
 
+
+        // + bootstrapper 초기화는 첫프레임 끝나야 완료됨.
+        yield return null; // 한 프레임 대기
+        var bootstrapper = Bootstrapper.Instance;
+
         // + 로컬라이제이션 초기화
-        yield return SetProgress(0.7f, "boot_init-localization");
-        yield return Bootstrapper.Instance.SetLocale();
+        yield return bootstrapper.SetLocale();
         var locale = LocalizationSettings.SelectedLocale;
         Debug.Log($"[Boot] Localization initialized. Locale: {locale.Identifier.Code}");
 
-        // 로딩패널 활성화
+        // 패널 상태 초기화
+        loginPanel.SetActive(false);
+        donePanel.SetActive(false);
         loadingPanel.SetActive(true);
 
         if (skipBootFlow)
@@ -92,14 +101,14 @@ public class BootSceneController : MonoBehaviour
         // ## 로딩 시작 ##
 
 
-        // + bootstrapper 초기화는 첫프레임 끝나야 완료됨.
-        yield return SetProgress(0.1f, "boot_init-bootstrapper");
-        yield return null; // 한 프레임 대기
-        var bootstrapper = Bootstrapper.Instance;
-
-
         // + bootstrapper 인터넷 연결 체크 (if no connection, go to offline Mode Scene)
-        yield return SetProgress(0.2f, "boot_check-internet");
+        yield return SetProgress(0.1f, "boot_check-internet");
+        if (simulateNoInternet)
+        {
+            Debug.LogError("[Boot] Simulated no internet connection.");
+            SceneManager.LoadScene("OfflineMode"); // [연결 없는 경우] 오프라인 모드 씬으로 전환
+            yield break;
+        }
         bootstrapper.CheckInternetConnection();
         float internetCheckTimeout = 5f;
         float elapsed = 0f;
@@ -118,6 +127,12 @@ public class BootSceneController : MonoBehaviour
 
         // + bootstrapper 서버 상태 체크 (if server maintenance, go to offline Mode Scene)
         yield return SetProgress(0.3f, "boot_check-server-status");
+        if (simulateServerMaintenance)
+        {
+            Debug.LogError("[Boot] Simulated server maintenance.");
+            SceneManager.LoadScene("OfflineMode"); // [서버 점검 중/운영 종료 시] 오프라인 모드 씬으로 전환
+            yield break;
+        }
         bool serverOk = false;
         yield return bootstrapper.CheckServerStatus((ok) => serverOk = ok);
         if (!serverOk)
@@ -214,6 +229,12 @@ public class BootSceneController : MonoBehaviour
 #endif
 
         loadingPanel.SetActive(false);
+
+        if (useDonePanelAfterLogin)
+        {
+            donePanel.SetActive(true);
+            yield break;
+        }
         SceneManager.LoadScene("Lobby");
 
 

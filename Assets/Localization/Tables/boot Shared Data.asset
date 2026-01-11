@@ -63,6 +63,18 @@ MonoBehaviour:
     m_Key: boot_init-localization
     m_Metadata:
       m_Items: []
+  - m_Id: 24096424223301632
+    m_Key: boot_load-user-data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24096514606358528
+    m_Key: boot_auto-login
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24247626231701504
+    m_Key: boot_done
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

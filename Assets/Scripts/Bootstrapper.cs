@@ -59,14 +59,22 @@ public class Bootstrapper : MonoBehaviour
 
         if (appConfig.defaultLanguage == SystemLanguage.Unknown)
         {
-            // 이 시점에는 SelectedLocale이 실제 반영된 상태
-            var currentLocale = LocalizationSettings.SelectedLocale;
-            string code = currentLocale?.Identifier.Code ?? "en";
+            // SelectedLocale은 초기화 타이밍에 따라 변경될 수 있으므로
+            // 운영체제의 시스템 언어를 우선 사용하고, 시스템언어가 Unknown일 때만 SelectedLocale을 보조로 사용합니다.
+            SystemLanguage sys = Application.systemLanguage;
 
-            if (code.StartsWith("ko"))
-                appConfig.defaultLanguage = SystemLanguage.Korean;
-            else
-                appConfig.defaultLanguage = SystemLanguage.English;
+            if (sys == SystemLanguage.Unknown)
+            {
+                var currentLocale = LocalizationSettings.SelectedLocale;
+                string code = currentLocale?.Identifier.Code;
+                if (!string.IsNullOrEmpty(code) && code.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+                    sys = SystemLanguage.Korean;
+                else
+                    sys = SystemLanguage.English;
+            }
+
+            // 게임 내에서 지원하는 범위로 축소(여기선 ko / en 구분)
+            appConfig.defaultLanguage = (sys == SystemLanguage.Korean) ? SystemLanguage.Korean : SystemLanguage.English;
 
             SaveAppConfig();
             Debug.Log($"[Bootstrapper] First-run detected. Language auto-saved: {appConfig.defaultLanguage}");

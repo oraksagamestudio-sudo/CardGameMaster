@@ -63,7 +63,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24095723355103232
-    m_Localized: Set Locale..
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24096424223301632
+    m_Localized: Get User Data...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24096514606358528
+    m_Localized: Get Account...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24247626231701504
+    m_Localized: Tap to Continue.
     m_Metadata:
       m_Items: []
   references:
