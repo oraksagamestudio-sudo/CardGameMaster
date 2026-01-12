@@ -330,9 +330,22 @@ public class BootSceneController : MonoBehaviour
     // }
     private IEnumerator SetProgress(float progress, string messagekey)
     {
+        float start = loadingProgressBar.value;
+        float duration = useFastBoot ? 0.5f : 1f;
+        float elapsed = 0f;
+        loadingMessage.text = L.S("boot", messagekey);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            float current = Mathf.Lerp(start, progress, t);
+            loadingProgressBar.value = current;
+            loadingProgressValue.text = $"{(int)(current * 100)}%";
+            yield return null;
+        }
+
         loadingProgressBar.value = progress;
         loadingProgressValue.text = $"{(int)(progress * 100)}%";
-        loadingMessage.text = L.S("boot", messagekey);
-        yield return new WaitForSeconds(useFastBoot ? 0.5f : 1f);
     }
 }

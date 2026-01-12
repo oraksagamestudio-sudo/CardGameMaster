@@ -34,11 +34,12 @@ public class Bootstrapper : MonoBehaviour
     [Header("Server Catalog")]
     [SerializeField] private HeartbeatPolicyRegistry heartbeatRegistry;
     [SerializeField] private string heartbeatUri = "/api/heartbeat.php";
-    [SerializeField] private string heartbeatToken = ""; // 로그인 후 갱신 주입 가능
+    private string heartbeatToken = ""; // 로그인 후 갱신 주입 가능
     [SerializeField] private string stageListRemoteUri = "/api/fetch_stage_seeds.php";
     
     private string lastestClientVersion;
 
+    public string HeartbeatURL { get => appConfig.serverUrl + heartbeatUri; }
 
 
     private async void Start()

@@ -8,9 +8,7 @@ public class HeartbeatService : MonoBehaviour
 {
     public static HeartbeatService Instance { get; private set; }
 
-    [Header("서버 설정")]
-    [SerializeField] private string endpointUrl = "http://api.example.com/heartbeat";
-    [SerializeField] private string authToken = ""; // 필요시 주입
+    private string authToken = ""; // 필요시 주입
 
     private HeartbeatPolicyRegistry _registry;
     private Coroutine _loop;
@@ -35,11 +33,10 @@ public class HeartbeatService : MonoBehaviour
         SceneManager.activeSceneChanged -= OnActiveSceneChanged;
     }
 
-    public void Configure(HeartbeatPolicyRegistry registry, string token = null, string url = null)
+    public void Configure(HeartbeatPolicyRegistry registry, string token = null)
     {
         _registry = registry;
         if (!string.IsNullOrEmpty(token)) authToken = token;
-        if (!string.IsNullOrEmpty(url)) endpointUrl = url;
 
         // 현재 씬 기준으로 즉시 정책 적용
         var scene = SceneManager.GetActiveScene().name;
@@ -112,8 +109,10 @@ public class HeartbeatService : MonoBehaviour
     private IEnumerator SendOnce()
     {
         _retryDelay = 1f; // reset retry delay at start of SendOnce
+        var heartbeatUrl = Bootstrapper.Instance.HeartbeatURL;
         while (true)
         {
+            // TODO: 페이로드 설계
             // 예시 페이로드: 프로젝트 상황에 맞게 확장 (userId, deviceId, ping seq 등)
             var payload = new
             {
@@ -122,9 +121,10 @@ public class HeartbeatService : MonoBehaviour
                 app = Application.identifier,
                 platform = Application.platform.ToString()
             };
+
             string json = JsonUtility.ToJson(payload);
 
-            using (var req = new UnityWebRequest(endpointUrl, "POST"))
+            using (var req = new UnityWebRequest(heartbeatUrl, "POST"))
             {
                 byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
                 req.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -136,11 +136,7 @@ public class HeartbeatService : MonoBehaviour
 
                 yield return req.SendWebRequest();
 
-#if UNITY_2020_2_OR_NEWER
                 bool ok = req.result == UnityWebRequest.Result.Success;
-#else
-                bool ok = !req.isNetworkError && !req.isHttpError;
-#endif
                 if (!ok)
                 {
                     Debug.LogWarning($"[Heartbeat] fail {req.responseCode}: {req.error}");
