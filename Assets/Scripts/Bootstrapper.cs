@@ -1,18 +1,12 @@
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.AddressableAssets;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using System.Threading.Tasks;
-using UnityEngine.UI;
-using TMPro;
 using System.Collections;
 using UnityEngine.Networking;
 using Unity.Services.Core;
+using System.Collections.Generic;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -33,7 +27,9 @@ public class Bootstrapper : MonoBehaviour
 
     [Header("Server Catalog")]
     [SerializeField] private HeartbeatPolicyRegistry heartbeatRegistry;
-    [SerializeField] private string heartbeatUri = "/api/heartbeat.php";
+    [SerializeField] private string serverLiveCheckUri;
+    [SerializeField] private string clientVersionCheckUri;
+    [SerializeField] private string heartbeatUri;
     private string heartbeatToken = ""; // 로그인 후 갱신 주입 가능
     [SerializeField] private string stageListRemoteUri = "/api/fetch_stage_seeds.php";
     
@@ -57,49 +53,63 @@ public class Bootstrapper : MonoBehaviour
         IsInitialized = true;
 
         Debug.Log("[Bootstrapper] Bootstrapper started");
-
     }
 
     public IEnumerator SetLocale()
     {
         yield return LocalizationSettings.InitializationOperation;
 
-        if (appConfig.defaultLanguage == SystemLanguage.Unknown)
+        if (string.IsNullOrEmpty(appConfig.defaultLocaleCode))
         {
             // SelectedLocale은 초기화 타이밍에 따라 변경될 수 있으므로
-            // 운영체제의 시스템 언어를 우선 사용하고, 시스템언어가 Unknown일 때만 SelectedLocale을 보조로 사용합니다.
-            SystemLanguage sys = Application.systemLanguage;
+            // 에디터에서는 선택된 Locale을 우선 사용하고, 그 외에는 시스템 언어를 사용합니다.
+            string detectedCode = null;
 
 #if UNITY_EDITOR
             var simLang = GetEditorSimulatorSystemLanguage();
             if (simLang.HasValue)
             {
-                sys = simLang.Value;
-                Debug.Log($"[Bootstrapper] Editor simulator language detected: {sys}");
+                detectedCode = GetIsoCodeFromSystemLanguage(simLang.Value);
+                Debug.Log($"[Bootstrapper] Editor simulator language detected: {simLang.Value}");
+            }
+            if (string.IsNullOrEmpty(detectedCode))
+            {
+                var selected = LocalizationSettings.SelectedLocale;
+                if (selected != null)
+                    detectedCode = selected.Identifier.Code;
             }
 #endif
+            if (string.IsNullOrEmpty(detectedCode))
+                detectedCode = GetIsoCodeFromSystemLanguage(Application.systemLanguage);
 
-            if (sys == SystemLanguage.Unknown)
+            if (string.IsNullOrEmpty(detectedCode))
             {
                 var currentLocale = LocalizationSettings.SelectedLocale;
-                string code = currentLocale?.Identifier.Code;
-                if (!string.IsNullOrEmpty(code) && code.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
-                    sys = SystemLanguage.Korean;
-                else
-                    sys = SystemLanguage.English;
+                detectedCode = currentLocale?.Identifier.Code;
             }
 
-            // 게임 내에서 지원하는 범위로 축소(여기선 ko / en 구분)
-            appConfig.defaultLanguage = (sys == SystemLanguage.Korean) ? SystemLanguage.Korean : SystemLanguage.English;
+            // Legacy 마이그레이션은 감지 실패 시에만 사용
+            if (string.IsNullOrEmpty(detectedCode) && appConfig.defaultLanguage != SystemLanguage.Unknown)
+            {
+                detectedCode = GetIsoCodeFromSystemLanguage(appConfig.defaultLanguage);
+                Debug.Log($"[Bootstrapper] Legacy language migrated: {detectedCode}");
+            }
+
+            if (string.IsNullOrEmpty(detectedCode))
+                detectedCode = "en";
+
+            appConfig.defaultLocaleCode = detectedCode;
+            appConfig.defaultLanguage = SystemLanguage.Unknown;
+
 
             SaveAppConfig();
-            Debug.Log($"[Bootstrapper] First-run detected. Language auto-saved: {appConfig.defaultLanguage}");
+            Debug.Log($"[Bootstrapper] First-run detected. Locale auto-saved: {appConfig.defaultLocaleCode}");
             yield break;
         }
 
         // 이후 실행 시 AppConfig 기반 강제 적용
         var available = LocalizationSettings.AvailableLocales;
-        Locale targetLocale = FindLocaleByLanguage(available, appConfig.defaultLanguage);
+        Locale targetLocale = FindLocaleByCode(available, appConfig.defaultLocaleCode);
 
         if (targetLocale != null && LocalizationSettings.SelectedLocale != targetLocale)
         {
@@ -111,28 +121,27 @@ public class Bootstrapper : MonoBehaviour
     /// <summary>
     /// Helper to find locale by SystemLanguage
     /// </summary>
-    private Locale FindLocaleByLanguage(ILocalesProvider available, SystemLanguage lang)
+    private Locale FindLocaleByCode(ILocalesProvider available, string localeCode)
     {
         if (available == null) return null;
 
-        // ✅ SystemLanguage를 ISO 코드(ko, en 등)로 변환
-        string isoCode = GetIsoCodeFromSystemLanguage(lang);
+        if (string.IsNullOrEmpty(localeCode)) return null;
 
         var locales = available.Locales;
         if (locales == null || locales.Count == 0) return null;
 
         // 1️⃣ 정확히 일치하는 코드 우선
         Locale exact = locales.FirstOrDefault(l =>
-            l.Identifier.Code.Equals(isoCode, StringComparison.OrdinalIgnoreCase) ||
-            l.Identifier.CultureInfo?.TwoLetterISOLanguageName == isoCode);
+            l.Identifier.Code.Equals(localeCode, StringComparison.OrdinalIgnoreCase) ||
+            l.Identifier.CultureInfo?.TwoLetterISOLanguageName.Equals(localeCode, StringComparison.OrdinalIgnoreCase) == true);
         if (exact != null)
             return exact;
 
         // 2️⃣ 접두어 일치 허용 (ko-KR vs ko)
         return locales.FirstOrDefault(l =>
-            l.Identifier.Code.StartsWith(isoCode, StringComparison.OrdinalIgnoreCase) ||
+            l.Identifier.Code.StartsWith(localeCode, StringComparison.OrdinalIgnoreCase) ||
             (l.Identifier.CultureInfo != null &&
-             l.Identifier.CultureInfo.TwoLetterISOLanguageName == isoCode));
+             l.Identifier.CultureInfo.TwoLetterISOLanguageName.Equals(localeCode, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>
@@ -248,14 +257,14 @@ public class Bootstrapper : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(appConfig);
         UnityEditor.AssetDatabase.SaveAssets();
 #else
-    // 런타임 환경에서는 PlayerPrefs로 보관 (ScriptableObject는 빌드 후 저장 불가)
-    PlayerPrefs.SetString("AppConfig.Language", appConfig.defaultLanguage.ToString());
-    PlayerPrefs.Save();
+        // 런타임 환경에서는 PlayerPrefs로 보관 (ScriptableObject는 빌드 후 저장 불가)
+        PlayerPrefs.SetString("AppConfig.Locale", appConfig.defaultLocaleCode ?? "");
+        PlayerPrefs.Save();
 #endif
     }
 
 
-#region New Boot Flow
+    #region New Boot Flow
 
 
     public bool IsInternetCheckDone { get; private set; } = false;
@@ -282,11 +291,12 @@ public class Bootstrapper : MonoBehaviour
         yield break;
     }
     
+    
     public IEnumerator CheckServerStatus(Action<bool> onCompleted)
     {
         bool serverOk = false;
         // 서버 상태 체크 로직 (예: HTTP 요청)
-        var hbUrl = appConfig.serverUrl + heartbeatUri;
+        var serverLiveCheckUrl = appConfig.serverUrl + serverLiveCheckUri + "/"; // http://hyemini.com/orsgs/cgmapi/lc.do로 연결(실제 디렉토리는 lc.do/index.php)
         // if (Uri.TryCreate(hbUrl, UriKind.Absolute, out var hbUri) && hbUri.Scheme == Uri.UriSchemeHttp)
         // {
         //     var builder = new UriBuilder(hbUri)
@@ -297,8 +307,12 @@ public class Bootstrapper : MonoBehaviour
         //     hbUrl = builder.Uri.AbsoluteUri;
         //     Debug.LogWarning($"[Bootstrapper] Insecure HTTP blocked; upgrading heartbeat to HTTPS: {hbUrl}");
         // }
-
-        var www = UnityWebRequest.Get(hbUrl);
+        var param = new Dictionary<string, string>()
+        {
+            {"lang", appConfig.defaultLocaleCode},
+            {"appid", Application.identifier}
+        };
+        var www = UnityWebRequest.Post(serverLiveCheckUrl, param);
         // Debug.Log($"[Bootstrapper] Checking server status: {www.url}");
         yield return www.SendWebRequest();
 
@@ -309,7 +323,7 @@ public class Bootstrapper : MonoBehaviour
             {
                 Debug.LogWarning($"[Bootstrapper] SSL error on heartbeat; retrying with permissive cert handler: {www.error}");
                 www.Dispose();
-                www = UnityWebRequest.Get(hbUrl);
+                www = UnityWebRequest.Post(serverLiveCheckUrl, param);
                 www.certificateHandler = new PermissiveCertificateHandler();
                 www.disposeCertificateHandlerOnDispose = true;
                 yield return www.SendWebRequest();
@@ -317,7 +331,7 @@ public class Bootstrapper : MonoBehaviour
 #endif
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"[Bootstrapper] Server status check failed: {www.error}");
+                Debug.LogError($"[Bootstrapper] Server status check failed: {www.error}\n{www.downloadHandler.text}");
                 serverOk = false;
             }
         }

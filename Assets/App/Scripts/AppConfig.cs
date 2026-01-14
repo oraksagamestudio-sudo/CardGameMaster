@@ -10,5 +10,8 @@ public class AppConfig : ScriptableObject
     public string serverUrl = ""; //테스트 : http://hyemini.com/orsgs/cgm
 
     [Header("Localization Default")]
-    public SystemLanguage defaultLanguage = SystemLanguage.Unknown;
+    public string defaultLocaleCode = ""; // 예: en, ko, en-US
+
+    [SerializeField, HideInInspector]
+    public SystemLanguage defaultLanguage = SystemLanguage.Unknown; // legacy
 }
