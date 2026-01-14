@@ -7,6 +7,9 @@ using System.Collections;
 using UnityEngine.Networking;
 using Unity.Services.Core;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Unity.Services.Authentication;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -351,12 +354,36 @@ public class Bootstrapper : MonoBehaviour
         yield break;
     }
 
-
-    public IEnumerator CheckForUpdates(string currentVersion, Action<bool> onCompleted)
+    private static string GetURLQueryString(Dictionary<string, string> param)
+    {
+        var queryString = new StringBuilder();
+        queryString.Append("?");
+        int count = 0;
+        foreach (var p in param)
+        {
+            if (count > 0) queryString.Append("&");
+            queryString.Append(p.Key);
+            queryString.Append("=");
+            queryString.Append(UnityWebRequest.EscapeURL(p.Value));
+            count++;
+        }
+        return queryString.ToString();
+    }
+    public IEnumerator CheckForUpdates(Action<bool> onCompleted)
     {
         bool needUpdate = false;
         // 업데이트 체크 로직 (예: HTTP 요청)
-        var updateUrl = appConfig.serverUrl + "/api/check_update.php?version=" + UnityWebRequest.EscapeURL(currentVersion);
+        var param = new Dictionary<string, string>()
+        {
+            #if UNITY_IOS
+            {"os","ios"},
+            #else
+            {"os", "android"},
+            #endif
+            {"appid", Application.identifier}  
+        };
+        
+        var updateUrl = $"{appConfig.serverUrl}{clientVersionCheckUri}{GetURLQueryString(param)}";
         var www = UnityWebRequest.Get(updateUrl);
         
         yield return www.SendWebRequest();
@@ -379,8 +406,8 @@ public class Bootstrapper : MonoBehaviour
             try
             {
                 var response = JsonUtility.FromJson<UpdateCheckResponse>(json);
-                needUpdate = response.need_update;
-                Debug.Log($"[Bootstrapper] Update check success: need_update={needUpdate}");
+                needUpdate = response.lastest_version != Application.version;
+                Debug.Log($"[Bootstrapper] Update check success: current version={Application.version}, lastest version={response.lastest_version}\n{json}");
             }
             catch (Exception e)
             {
@@ -393,56 +420,79 @@ public class Bootstrapper : MonoBehaviour
         yield break;
     }
 
-    public IEnumerator CheckResourceIntegrity(Action<bool> onCompleted)
-    {
-        bool integrityOk = false;
-        // 리소스 무결성 체크 로직 (예: 파일 해시 체크)
-        var integrityUrl = appConfig.serverUrl + "/api/check_integrity.php";
-        var www = UnityWebRequest.Get(integrityUrl);
-        yield return www.SendWebRequest();
+    // public IEnumerator CheckResourceIntegrity(Action<bool> onCompleted)
+    // {
+    //     bool integrityOk = false;
+    //     // 리소스 무결성 체크 로직 (예: 파일 해시 체크)
+    //     var integrityUrl = appConfig.serverUrl + "/api/check_integrity.php";
+    //     var www = UnityWebRequest.Get(integrityUrl);
+    //     yield return www.SendWebRequest();
 
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError($"[Bootstrapper] Resource integrity check failed: {www.error}");
-            integrityOk = false; // 오류 시 무결성 불필요로 간주
-        }
-        else if (www.responseCode != 200)
-        {
-            Debug.LogError($"[Bootstrapper] Resource integrity check failed: HTTP {www.responseCode}");
-            integrityOk = false; // 오류 시 무결성 불필요로 간주
-        }
-        else
-        {
-            // 서버 응답 처리
-            var json = www.downloadHandler.text;
-            try
-            {
-                var response = JsonUtility.FromJson<IntegrityCheckResponse>(json);
-                integrityOk = response.integrity_ok;
-                Debug.Log($"[Bootstrapper] Resource integrity check success: integrity_ok={integrityOk}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[Bootstrapper] Resource integrity check parse failed: {e.Message}");
-                integrityOk = false; // 파싱 오류 시 무결성 불필요로 간주
-            }
-        }
+    //     if (www.result != UnityWebRequest.Result.Success)
+    //     {
+    //         Debug.LogError($"[Bootstrapper] Resource integrity check failed: {www.error}");
+    //         integrityOk = false; // 오류 시 무결성 불필요로 간주
+    //     }
+    //     else if (www.responseCode != 200)
+    //     {
+    //         Debug.LogError($"[Bootstrapper] Resource integrity check failed: HTTP {www.responseCode}");
+    //         integrityOk = false; // 오류 시 무결성 불필요로 간주
+    //     }
+    //     else
+    //     {
+    //         // 서버 응답 처리
+    //         var json = www.downloadHandler.text;
+    //         try
+    //         {
+    //             var response = JsonUtility.FromJson<IntegrityCheckResponse>(json);
+    //             integrityOk = response.integrity_ok;
+    //             Debug.Log($"[Bootstrapper] Resource integrity check success: integrity_ok={integrityOk}");
+    //         }
+    //         catch (Exception e)
+    //         {
+    //             Debug.LogError($"[Bootstrapper] Resource integrity check parse failed: {e.Message}");
+    //             integrityOk = false; // 파싱 오류 시 무결성 불필요로 간주
+    //         }
+    //     }
 
-        onCompleted?.Invoke(integrityOk);
-        yield break;
-    }
-    //TODO: 유저 데이터 받아오는 워크플로우 구현하기
+    //     onCompleted?.Invoke(integrityOk);
+    //     yield break;
+    // }
+
     public IEnumerator LoadUserData(Action<bool> onCompleted)
     {
         bool userDataOk = false;
         // 사용자 데이터 로드 로직 (예: HTTP 요청)
+        //TODO: 유저 데이터 받아오는 워크플로우 구현하기
         yield return new WaitForSeconds(1.0f); // 더미 대기
         userDataOk = true; // 성공으로 간주
+
+
         onCompleted?.Invoke(userDataOk);
         yield break;
     }
 #endregion
 
+
+#region Login Functions
+
+    public IEnumerator StartGuestMode()
+    {
+        yield return AuthenticationService.Instance.SignInAnonymouslyAsync();
+        Debug.Log("Guest UID: " + AuthenticationService.Instance.PlayerId);
+
+        var uid = AuthenticationService.Instance.PlayerId;
+        var accessToken = AuthenticationService.Instance.AccessToken;
+
+        //TODO: 서버에 플레이어uid/accessToken 보내서 없으면 새로 유저정보 생성하고 넘어가기
+        //있으면 그대로 진행
+
+        PlayerPrefs.SetInt("autoLogin", 1);
+        PlayerPrefs.Save();
+
+        //TODO: 다시 부트플로우 시작시켜야함
+    }
+    #endregion
 }
 
 internal class IntegrityCheckResponse
@@ -452,5 +502,5 @@ internal class IntegrityCheckResponse
 
 internal class UpdateCheckResponse
 {
-    public bool need_update;
+    public string lastest_version;
 }

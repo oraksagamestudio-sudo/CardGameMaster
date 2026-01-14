@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AppConfig
   remoteCatalogUrl: 
   serverUrl: http://hyemini.com/orsgs/cgmapi
-  defaultLocaleCode: en
+  defaultLocaleCode: ko
   defaultLanguage: 43

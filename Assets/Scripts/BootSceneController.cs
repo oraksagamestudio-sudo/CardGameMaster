@@ -169,7 +169,7 @@ public class BootSceneController : MonoBehaviour
         // + bootstrapper 업데이트 체크 (if need update, go to update scene)
         yield return SetProgress(0.4f, "boot_check-update");
         bool needUpdate = false;
-        yield return bootstrapper.CheckForUpdates(Application.version, (need) => { needUpdate = need; });
+        yield return bootstrapper.CheckForUpdates((need) => { needUpdate = need; });
         if (needUpdate)
         {
             Debug.LogError("[Boot] Update required.");
