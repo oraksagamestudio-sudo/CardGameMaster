@@ -1,4 +1,5 @@
 // Assets/Auth/Scripts/AuthFacade.cs
+using System;
 using System.Collections;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
@@ -39,15 +40,5 @@ public static class AuthFacade
 
     #region New Auth Methods with Callbacks
     
-    public static void TryAutoLogin(System.Action<bool> onCompleted)
-    {
-        bool isSignedIn = AuthenticationService.Instance.IsSignedIn;
-        if (isSignedIn)
-            Debug.Log("[AuthFacade] Already signed in.");
-        var uid = AuthenticationService.Instance.PlayerId;
-        var aceessToken = AuthenticationService.Instance.AccessToken;
-        // TODO: 서버에서 유저 로그인 성공여부만 받아오기
-        onCompleted?.Invoke(isSignedIn);
-    }
 #endregion
 }

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: AppConfig
   m_EditorClassIdentifier: Assembly-CSharp::AppConfig
   remoteCatalogUrl: 
-  serverUrl: http://hyemini.com/orsgs/cgmapi
+  serverUrl: https://oraksa-gamestudio.com
   defaultLocaleCode: ko
   defaultLanguage: 43

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,7 +51,20 @@ public class LoginController : MonoBehaviour
     {
         Debug.Log("Guest Mode Clicked");
         
-        StartCoroutine(Bootstrapper.Instance.StartGuestMode());
+        StartCoroutine(GuestModeRoutine());
         
+    }
+
+    private IEnumerator GuestModeRoutine() {
+
+        yield return Bootstrapper.Instance.StartGuestMode();
+        if (Bootstrapper.Instance.IsGuestMode)
+        {
+            Debug.Log("Guest Mode Success");
+        }
+        else
+        {
+            Debug.LogError("Guest Mode Failed");
+        }
     }
 }

@@ -8,7 +8,6 @@ using UnityEngine.Networking;
 using Unity.Services.Core;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using Unity.Services.Authentication;
 
 public class Bootstrapper : MonoBehaviour
@@ -21,6 +20,7 @@ public class Bootstrapper : MonoBehaviour
         }
     }
     public static Bootstrapper Instance { get; private set; }
+    public bool IsGuestMode { get; private set; } = false;
 
     // 부트씬이 참고할 상태
     public bool IsInitialized { get; private set; } = false;
@@ -33,11 +33,12 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] private string serverLiveCheckUri;
     [SerializeField] private string clientVersionCheckUri;
     [SerializeField] private string heartbeatUri;
+    [SerializeField] private string loginUserCheckUri;
     private string heartbeatToken = ""; // 로그인 후 갱신 주입 가능
     [SerializeField] private string stageListRemoteUri = "/api/fetch_stage_seeds.php";
     
     private string lastestClientVersion;
-
+    public string sessionToken;
     public string HeartbeatURL { get => appConfig.serverUrl + heartbeatUri; }
 
 
@@ -293,66 +294,6 @@ public class Bootstrapper : MonoBehaviour
         IsInternetCheckDone = true;
         yield break;
     }
-    
-    
-    public IEnumerator CheckServerStatus(Action<bool> onCompleted)
-    {
-        bool serverOk = false;
-        // 서버 상태 체크 로직 (예: HTTP 요청)
-        var serverLiveCheckUrl = appConfig.serverUrl + serverLiveCheckUri + "/"; // http://hyemini.com/orsgs/cgmapi/lc.do로 연결(실제 디렉토리는 lc.do/index.php)
-        // if (Uri.TryCreate(hbUrl, UriKind.Absolute, out var hbUri) && hbUri.Scheme == Uri.UriSchemeHttp)
-        // {
-        //     var builder = new UriBuilder(hbUri)
-        //     {
-        //         Scheme = Uri.UriSchemeHttps,
-        //         Port = hbUri.Port == 80 ? -1 : hbUri.Port
-        //     };
-        //     hbUrl = builder.Uri.AbsoluteUri;
-        //     Debug.LogWarning($"[Bootstrapper] Insecure HTTP blocked; upgrading heartbeat to HTTPS: {hbUrl}");
-        // }
-        var param = new Dictionary<string, string>()
-        {
-            {"lang", appConfig.defaultLocaleCode},
-            {"appid", Application.identifier}
-        };
-        var www = UnityWebRequest.Post(serverLiveCheckUrl, param);
-        // Debug.Log($"[Bootstrapper] Checking server status: {www.url}");
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (!string.IsNullOrEmpty(www.error) && www.error.Contains("SSL"))
-            {
-                Debug.LogWarning($"[Bootstrapper] SSL error on heartbeat; retrying with permissive cert handler: {www.error}");
-                www.Dispose();
-                www = UnityWebRequest.Post(serverLiveCheckUrl, param);
-                www.certificateHandler = new PermissiveCertificateHandler();
-                www.disposeCertificateHandlerOnDispose = true;
-                yield return www.SendWebRequest();
-            }
-#endif
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError($"[Bootstrapper] Server status check failed: {www.error}\n{www.downloadHandler.text}");
-                serverOk = false;
-            }
-        }
-        if (www.result == UnityWebRequest.Result.Success && www.responseCode != 200)
-        {
-            Debug.LogError($"[Bootstrapper] Server status check failed: HTTP {www.responseCode}");
-            serverOk = false;
-        }
-        else if (www.result == UnityWebRequest.Result.Success)
-        {
-            // 서버 응답 처리
-            Debug.Log("[Bootstrapper] Server status check success");
-            serverOk = true; // 실제 응답에 따라 결정
-        }
-        
-        onCompleted?.Invoke(serverOk);
-        yield break;
-    }
 
     private static string GetURLQueryString(Dictionary<string, string> param)
     {
@@ -369,6 +310,88 @@ public class Bootstrapper : MonoBehaviour
         }
         return queryString.ToString();
     }
+
+    /// <summary>
+    /// [POST] 서버 상태 체크
+    /// </summary>
+    /// <param name="onCompleted"></param>
+    /// <returns></returns>
+    public IEnumerator CheckServerStatus(Action<ServerStatus, string> onCompleted)
+    {
+        ServerStatus serverStatus = ServerStatus.Stop;
+        string message = null;
+
+        // 서버 상태 체크 로직 (예: HTTP 요청)
+        var serverLiveCheckUrl = appConfig.serverUrl + serverLiveCheckUri;
+        var param = new Dictionary<string, string>()
+        {
+            {"lang", appConfig.defaultLocaleCode},
+            {"appid", Application.identifier}
+        };
+        var www = UnityWebRequest.Post(serverLiveCheckUrl, param);
+        // Debug.Log($"[Bootstrapper] Checking server status: {www.url}");
+        yield return www.SendWebRequest();
+
+        if (www.result == UnityWebRequest.Result.Success)
+        {
+            // 서버 정상 응답
+            var json = www.downloadHandler.text;
+            try
+            {
+                var response = JsonUtility.FromJson<ServerStatusCheckResponse>(json);
+                switch(response.status)
+                {
+                    case "ok" :
+                        serverStatus = ServerStatus.OK;
+                        Log("[Bootstrapper] Server status check success", ref www);
+                        break;
+                    case "maintenance" :
+                        // 서버 상태 체크 실패
+                        serverStatus = ServerStatus.Maintenance;
+                        LogError($"[Bootstrapper] Server is under maintenance.", ref www);
+                        break;
+                    case "error":
+                        // 서버 상태 체크 실패
+                        serverStatus = ServerStatus.Error;
+                        LogError($"[Bootstrapper] Server error occurred.", ref www);
+                        break;
+                    case "stop":
+                        // 서버 상태 체크 실패
+                        serverStatus = ServerStatus.Stop;
+                        LogError($"[Bootstrapper] Server has been shut down.", ref www);
+                        break;
+                        
+                }
+                
+
+                
+            }
+            catch (Exception)
+            {
+                // 서버 상태 체크 실패
+                LogError($"[Bootstrapper] Server status check failed(client): {www.error}", ref www);
+                serverStatus = ServerStatus.Unknown;
+            }
+
+        }
+        else
+        {
+            // 서버 상태 체크 실패
+            LogError($"[Bootstrapper] Server status check failed: {www.error}", ref www);
+            serverStatus = ServerStatus.Unknown;
+        }
+        
+        onCompleted?.Invoke(serverStatus, message);
+        yield break;
+    }
+
+    
+
+    /// <summary>
+    /// [GET] 클라이언트 버전체크 및 업데이트 확인
+    /// </summary>
+    /// <param name="onCompleted"></param>
+    /// <returns></returns>
     public IEnumerator CheckForUpdates(Action<bool> onCompleted)
     {
         bool needUpdate = false;
@@ -390,12 +413,12 @@ public class Bootstrapper : MonoBehaviour
 
         if (www.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError($"[Bootstrapper] Update check failed: {www.error}");
+            LogError($"[Bootstrapper] Update check failed: {www.error}", ref www);
             needUpdate = false; // 오류 시 업데이트 불필요로 간주
         }
         else if( www.responseCode != 200)
         {
-            Debug.LogError($"[Bootstrapper] Update check failed: HTTP {www.responseCode}");
+            LogError($"[Bootstrapper] Update check failed: HTTP {www.responseCode}", ref www);
             needUpdate = false; // 오류 시 업데이트 불필요로 간주
         }
         else
@@ -407,11 +430,11 @@ public class Bootstrapper : MonoBehaviour
             {
                 var response = JsonUtility.FromJson<UpdateCheckResponse>(json);
                 needUpdate = response.lastest_version != Application.version;
-                Debug.Log($"[Bootstrapper] Update check success: current version={Application.version}, lastest version={response.lastest_version}\n{json}");
+                Log($"[Bootstrapper] Update check success: current version={Application.version}, lastest version={response.lastest_version}\n{json}", ref www);
             }
             catch (Exception e)
             {
-                Debug.LogError($"[Bootstrapper] Update check parse failed: {e.Message}");
+                LogError($"[Bootstrapper] Update check parse failed: {e.Message}", ref www);
                 needUpdate = false; // 파싱 오류 시 업데이트 불필요로 간주
             }
         }
@@ -459,9 +482,97 @@ public class Bootstrapper : MonoBehaviour
     //     yield break;
     // }
 
+
+    public IEnumerator TryAutoLogin(Action<AutoLoginResult, string> onCompleted)
+    {
+        var autoLoginResult = AutoLoginResult.Unknown;
+        string message = null;
+
+        bool isSignedIn = AuthenticationService.Instance.IsSignedIn;
+        if (isSignedIn)
+            Debug.Log("[Bootstrapper] Already signed in.");
+        var uid = AuthenticationService.Instance.PlayerId;
+        Debug.Log(uid);
+        var accessToken = AuthenticationService.Instance.AccessToken;
+        // 서버에서 유저 로그인 성공여부만 받아오기
+        var url = $"{appConfig.serverUrl}{loginUserCheckUri}";
+        var param = new Dictionary<string, string>()
+        {
+            {"appid", Application.identifier},
+            {"lang", appConfig.defaultLocaleCode},
+            {"uid", uid}
+        };
+
+        var www = UnityWebRequest.Post(url, param);
+        // Debug.Log($"[Bootstrapper] Checking server status: {www.url}");
+        yield return www.SendWebRequest();
+
+        // 서버 상태 체크 결과 처리 - 코드 정리
+        bool isSuccess = www.result == UnityWebRequest.Result.Success;
+
+        if (isSuccess)
+        {
+            // 서버 정상 응답
+            var json = www.downloadHandler.text;
+            try
+            {
+                var response = JsonUtility.FromJson<LoginUserCheckResponse>(json);
+                switch(response.result)
+                {
+                    case "active" : // 로그인 성공
+                        autoLoginResult = AutoLoginResult.Active;
+                        sessionToken = response.sessionToken;
+                        Log("[Bootstrapper] Auto Login success", ref www);
+                        break;
+                    case "no" :
+                        Log("[Bootstrapper] User not Found.", ref www);
+                        autoLoginResult = AutoLoginResult.No;
+                        break;
+                    case "suspened":
+                        LogError("[Bootstrapper] This user is Suspended.", ref www);
+                        message = response.message;
+                        break;
+                    case "banned" :
+                        LogError("[BootStrapper] This user is Banned.", ref www);
+                        message = response.message;
+                        break;
+                    case "protected" :
+                        LogError("[Bootstrapper] This user is Protected.", ref www);
+                        message = response.message;
+                        break;
+                    case "deleted" : 
+                        Log("[Bootstrapper] This user is deleted user.", ref www);
+                        message = response.message;
+                        break;
+
+                }
+                
+
+            }
+            //정상 응답 중 파싱 에러
+            catch (Exception)
+            {
+                // 서버 상태 체크 실패
+                LogError($"[Bootstrapper] AutoLogin failed(client): {www.error}", ref www);
+                autoLoginResult = AutoLoginResult.Unknown;
+            }
+
+        }
+        else
+        {
+            // 서버 상태 체크 실패
+            LogError($"[Bootstrapper] AutoLogin failed: {www.error}", ref www);
+            autoLoginResult = AutoLoginResult.Unknown;
+        }
+
+
+        onCompleted?.Invoke(autoLoginResult, message);
+    }
+
     public IEnumerator LoadUserData(Action<bool> onCompleted)
     {
         bool userDataOk = false;
+        
         // 사용자 데이터 로드 로직 (예: HTTP 요청)
         //TODO: 유저 데이터 받아오는 워크플로우 구현하기
         yield return new WaitForSeconds(1.0f); // 더미 대기
@@ -483,24 +594,116 @@ public class Bootstrapper : MonoBehaviour
 
         var uid = AuthenticationService.Instance.PlayerId;
         var accessToken = AuthenticationService.Instance.AccessToken;
+        var appId = Application.identifier;
 
         //TODO: 서버에 플레이어uid/accessToken 보내서 없으면 새로 유저정보 생성하고 넘어가기
         //있으면 그대로 진행
+        var param = new Dictionary<string, string>()
+        {
+            {"uid", uid},
+            {"at", accessToken},
+            {"appid", appId}
+        };
+        var www = UnityWebRequest.Post(appConfig.serverUrl + loginUserCheckUri, param);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            LogError($"[Bootstrapper] User check failed: {www.error}", ref www);
+            yield break;
+        }
+        else
+        {
+            var json = www.downloadHandler.text;
+            try
+            {
+                var response = JsonUtility.FromJson<LoginUserCheckResponse>(json);
+                switch (response.result)
+                {
+                    case "ok":
+                        PlayerPrefs.SetString("sessionToken", response.sessionToken);
+                        PlayerPrefs.Save();
+                        Log($"[Bootstrapper] User check success: {response.result}", ref www);
+                        break;
+                    default:
+                    case "no":
+                    case "deleted":
+                    case "blocked":
+                    case "protected":
+                        LogError($"[Bootstrapper] User check failed: {response.result}\n{response.message}", ref www);
+                        yield break;
+                }
+                
+            }
+            catch (Exception e)
+            {
+                LogError($"[Bootstrapper] User check parse failed: {e.Message}", ref www);
+                yield break;
+            }
+        }
 
         PlayerPrefs.SetInt("autoLogin", 1);
         PlayerPrefs.Save();
 
-        //TODO: 다시 부트플로우 시작시켜야함
+        IsGuestMode = true;
+
     }
     #endregion
-}
 
-internal class IntegrityCheckResponse
-{
-    public bool integrity_ok;
+
+
+
+
+
+    private static void Log(string message, ref UnityWebRequest www)
+    {
+#if UNITY_EDITOR
+        message += $"\nrequestUrl: {www.url}\nresponseCode: {www.responseCode}\nresult:\n{www.downloadHandler.text}";
+#endif
+        Debug.Log(message);
+    } 
+
+    private static void LogError(string message, ref UnityWebRequest www)
+    {
+#if UNITY_EDITOR
+        message += $"\nrequestUrl: {www.url}\nresponseCode: {www.responseCode}\nresult:\n{www.downloadHandler.text}";
+#endif
+        Debug.LogError(message);
+    }
 }
+// internal class ErrorResponse {
+//     public bool error;
+//     public string message;
+// }
+internal class ServerStatusCheckResponse
+{
+    public string status;
+    public string message;
+};
 
 internal class UpdateCheckResponse
 {
     public string lastest_version;
+}
+
+internal class LoginUserCheckResponse
+{
+    public string result;
+    public string sessionToken;
+    public string message;
+
+    /*
+    
+{
+    "result" : ok|no|deleted|blocked|protected ,
+    "sessionToken" : "[고유식별 세션토큰 생성 후 리턴]"
+}
+result: 
+ok= 유저 정보 있음 
+no= 유저 정보 없음
+deleted= 삭제된 계정
+blocked= 차단된 계정
+protected= 보호된 계정
+
+    */
 }

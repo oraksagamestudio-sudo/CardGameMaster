@@ -129,7 +129,7 @@ public class BootSceneController : MonoBehaviour
         if (simulateNoInternet)
         {
             Debug.LogError("[Boot] Simulated no internet connection.");
-            SceneManager.LoadScene("OfflineMode"); // [연결 없는 경우] 오프라인 모드 씬으로 전환
+            SceneManager.LoadScene("OfflineMode"); // ⭐️(TODO:SceneGeneration) [연결 없는 경우] 오프라인 모드 씬으로 전환
             yield break;
         }
         bootstrapper.CheckInternetConnection();
@@ -143,7 +143,7 @@ public class BootSceneController : MonoBehaviour
         if (!bootstrapper.IsInternetCheckDone || Application.internetReachability == NetworkReachability.NotReachable)
         {
             Debug.LogError("[Boot] Internet check failed or timed out.");
-            SceneManager.LoadScene("OfflineMode"); // [연결 없는 경우] 오프라인 모드 씬으로 전환
+            SceneManager.LoadScene("OfflineMode"); // ⭐️(TODO:SceneGeneration) [연결 없는 경우] 오프라인 모드 씬으로 전환
             yield break;
         }
 
@@ -153,15 +153,35 @@ public class BootSceneController : MonoBehaviour
         if (simulateServerMaintenance)
         {
             Debug.LogError("[Boot] Simulated server maintenance.");
-            SceneManager.LoadScene("OfflineMode"); // [서버 점검 중/운영 종료 시] 오프라인 모드 씬으로 전환
+            SceneManager.LoadScene("OfflineMode"); // ⭐️(TODO:SceneGeneration) [서버 점검 중/운영 종료 시] 오프라인 모드 씬으로 전환
             yield break;
         }
         bool serverOk = false;
-        yield return bootstrapper.CheckServerStatus((ok) => serverOk = ok);
+        var serverStatus = ServerStatus.Unknown;
+        string message  = null;
+        yield return bootstrapper.CheckServerStatus((stat, msg) => {
+            serverOk = stat == ServerStatus.OK;
+            serverStatus = stat;
+            message = msg;
+        });
         if (!serverOk)
         {
-            Debug.LogError("[Boot] Server is under maintenance.");
-            SceneManager.LoadScene("OfflineMode"); // [서버 점검 중/운영 종료 시] 오프라인 모드 씬으로 전환
+            if(message != null)
+            {
+                //TODO 상태별 메시지 팝업 띄우기
+                switch(serverStatus)
+                {
+                    case ServerStatus.Maintenance:
+                        PopupManager.Instance.Show(PopupType.Error, message);
+                        break;
+                }
+                Debug.LogError($"[Boot] server_status={serverStatus}: {message}");
+            }
+            else
+            {
+                Debug.LogError("[Boot] Server Connection failed.");
+            }
+            SceneManager.LoadScene("OfflineMode"); // ⭐️(TODO:SceneGeneration) [서버 점검 중/운영 종료 시] 오프라인 모드 씬으로 전환
             yield break;
         }
 
@@ -173,7 +193,7 @@ public class BootSceneController : MonoBehaviour
         if (needUpdate)
         {
             Debug.LogError("[Boot] Update required.");
-            SceneManager.LoadScene("Update"); // [업데이트 필요] 업데이트 씬으로 전환
+            //TODO // SceneManager.LoadScene("Update"); // ⭐️(TODO:??) [업데이트 필요] 업데이트 씬으로 전환
             yield break;
         }
 
@@ -198,23 +218,43 @@ public class BootSceneController : MonoBehaviour
         // + 자동로그인 시도 (if auto login fail, show login panel)
         yield return SetProgress(0.8f, "boot_auto-login");
         bool loginOk = false;
+        var autoLoginResult = AutoLoginResult.Unknown;
+        message = null;
         
         // 자동로그인 설정 확인(1이면 로그인 이력 있음)
         bool autoLoginInPref = PlayerPrefs.GetInt("autoLogin", 0) == 1;
         
         if (autoLogin && autoLoginInPref)
         {
-            AuthFacade.TryAutoLogin((ok) =>
+            yield return bootstrapper.TryAutoLogin((result, msg) =>
             {
-                loginOk = ok;
+                loginOk =  result == AutoLoginResult.Active ;
+                autoLoginResult = result;
+                message = msg;
             });
         }
         if (!loginOk)
         {
-            // 자동로그인 실패 시 로그인 패널 표시
-            loadingPanel.SetActive(false);
-            loginPanel.SetActive(true);
-            yield break; // 로그인 후 다시 부트플로우 시작하도록
+            if(autoLoginResult != AutoLoginResult.Active)
+            {
+                //유저를 찾지 못함.
+                if (autoLoginResult != AutoLoginResult.No && autoLoginResult != AutoLoginResult.Deleted)
+                {
+                    PopupManager.Instance.Show(
+                        popupType: PopupType.Error, 
+                        message: message,
+                        onOk: () =>
+                        {
+                            // ⭐️ TODO 차단, 보호된 계정, 정지된 계정의 경우 안내메시지 발송 후 로그아웃처리 
+                        });
+                    yield break;
+                }
+                // 자동로그인 실패 시 로그인 패널 표시
+                loadingPanel.SetActive(false);
+                loginPanel.SetActive(true);
+                yield break; // 로그인 후 다시 부트플로우 시작하도록
+            }
+            // [로그인 정상 완료] 이후 다음단계로 넘어감
         }
 
 
@@ -228,6 +268,7 @@ public class BootSceneController : MonoBehaviour
         */
         yield return SetProgress(0.9f, "boot_load-user-data");
         bool userDataOk = false;
+        // ⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️
         yield return bootstrapper.LoadUserData((ok) => userDataOk = ok);
         if (!userDataOk)
         {
@@ -349,3 +390,4 @@ public class BootSceneController : MonoBehaviour
         loadingProgressValue.text = $"{(int)(progress * 100)}%";
     }
 }
+

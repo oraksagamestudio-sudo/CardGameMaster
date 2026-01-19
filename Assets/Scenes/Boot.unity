@@ -2688,9 +2688,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bootstrapper
   appConfig: {fileID: 11400000, guid: 77b9059c7de604f6dafe156e78da8097, type: 2}
   heartbeatRegistry: {fileID: 11400000, guid: eabfa2f2388a946998e9bd0d0f92f08a, type: 2}
-  serverLiveCheckUri: /lc_do.php
-  clientVersionCheckUri: /vc_do.php
+  serverLiveCheckUri: /api/ssc.do
+  clientVersionCheckUri: /api/vc.do
   heartbeatUri: /hb.do
+  loginUserCheckUri: /api/luc.do
   stageListRemoteUri: ../cgm/api/fetch_stage_seeds.php
 --- !u!4 &1878616783
 Transform:
